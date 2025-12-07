@@ -1,0 +1,200 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd"><flow name="orderServiceJMS"><logger  level="USER" message="JMS Order Service Terminated" /><file:write config-ref="File_Config" path="/"  xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/file" name="Write_File" connector-ref="FILE_Configuration" path="concat($_globalVariables/ns3:GlobalVariables/Connections/FILE/outDir, Log.txt)" posX="1011" posY="35" type="FileWriteActivity"/><logger  level="USER" message="JMS Order Service Started" /><flow-ref name="LogandErrorHandlerDummy"  doc:name="LogandErrorHandler"  /><ee:transform xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/ee/core" name="Map_Data" type="MapperActivity" posX="217" posY="95"><ee:message><ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+            <element ref="ns2:customer"/>
+        </config>
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:inputBindings xmlns:ns0="http://xmlns.tibco.com/bw/process/2003">
+            <xsl:for-each xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$JMS-Queue-Receiver/ns6:ActivityOutput/OtherProperties">
+                <ee:customer xmlns:ns1="http://xmlns.example.com/unique/default/namespace/1134438639123">
+                    <ee:customerid>
+                        <xsl:value-of select="customerid"/>
+                    </ee:customerid>
+                    <ee:firstname>
+                        <xsl:value-of select="firstname"/>
+                    </ee:firstname>
+                    <ee:lastname>
+                        <xsl:value-of select="lastname"/>
+                    </ee:lastname>
+                    <ee:age>
+                        <xsl:value-of select="age"/>
+                    </ee:age>
+                    <ee:email>
+                        <xsl:value-of select="email"/>
+                    </ee:email>
+                    <ee:city>
+                        <xsl:value-of select="city"/>
+                    </ee:city>
+                    <ee:zipcode>
+                        <xsl:value-of select="zipcode"/>
+                    </ee:zipcode>
+                    <ee:transactionstatus>
+                        <xsl:value-of select="transactionstatus"/>
+                    </ee:transactionstatus>
+                </ee:customer>
+            </xsl:for-each>
+        </ns0:inputBindings>}]]></ee:set-payload></ee:message></ee:transform><flow-ref name="createOrderDummy"  doc:name="createOrder"  /><logger  level="USER" message="Order Handling REST API Invocation begins" /><logger  level="USER" message="Order Handling SOAP Service Invocation begins" /><jms:listener xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/jms" name="JMS_Queue_Receiver" destination="temp" posX="67" posY="79" config-ref="JMS_Config" <jms:consumer-type ><jms:queue-consumer /></jms:consumer-type>/></jms:listener><ee:transform xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/ee/core" name="JMS_Queue_Receiver" type="JMSQueueEventSource" posX="67" posY="79"><ee:message><ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+            <PermittedMessageType>Text</PermittedMessageType>
+            <SessionAttributes>
+                <transacted>false</transacted>
+                <acknowledgeMode>1</acknowledgeMode>
+                <maxSessions>1</maxSessions>
+                <destination>temp</destination>
+            </SessionAttributes>
+            <ConfigurableHeaders>
+                <JMSDeliveryMode>PERSISTENT</JMSDeliveryMode>
+                <JMSExpiration>0</JMSExpiration>
+                <JMSPriority>4</JMSPriority>
+            </ConfigurableHeaders>
+            <ConnectionReference>/Connections/JMS Connection.sharedjmscon</ConnectionReference>
+            <ApplicationProperties>/Connections/JMS Application Properties.sharedjmsapp</ApplicationProperties>
+        </config>
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:inputBindings xmlns:ns0="http://xmlns.tibco.com/bw/process/2003"/>}]]></ee:set-payload></ee:message></ee:transform><flow-ref name="SOAPcreateOrderService"  doc:name="createOrderService"  /><http:request method="GET" doc:name="Request" config-ref="HTTP_Request_configuration" path="<?xml version=1.0 encoding=UTF-8?><config>            <enableProtocolUI>WADL</enableProtocolUI>            <restMethodUI>POST</restMethodUI>            <restResponseType>JSON</restResponseType>            <authChoiceUI>No Authentication</authChoiceUI>            <WADLPaths>customerDetails</WADLPaths>            <WADLBaseURL>http://localhost:8085/orderCreateAPI</WADLBaseURL>            <restMethodIDUI>POST_CreateCustomer</restMethodIDUI>            <restURI>/orderCreateAPI/customerDetails</restURI>            <WADLReference>/WADL/OrderService.wadl</WADLReference>            <WADLContent>PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGFwcGxpY2F0aW9uIHhtbG5zPSJodHRwOi8vd2FkbC5kZXYuamF2YS5uZXQvMjAwOS8wMiIgbmFtZT0iT3JkZXJTZXJ2aWNlIj4KICAgIDxyZXNvdXJjZXMgYmFzZT0iaHR0cDovL2xvY2FsaG9zdDo4MDg1L29yZGVyQ3JlYXRlQVBJIiBuYW1lPSJvcmRlckNyZWF0ZUFQSSI+CiAgICAgICAgPHJlc291cmNlIGlkPSJjdXN0b21lcnMiIHBhdGg9Ii9jdXN0b21lckRldGFpbHMiPgogICAgICAgICAgICA8bWV0aG9kIG5hbWU9IlBPU1QiIGlkPSJDcmVhdGVDdXN0b21lciI+CiAgICAgICAgICAgICAgICA8cmVxdWVzdCBuYW1lPSJSZXF1ZXN0Ij4KICAgICAgICAgICAgICAgICAgICA8cmVwcmVzZW50YXRpb24gbWVkaWFUeXBlPSJhcHBsaWNhdGlvbi9qc29uIi8+CiAgICAgICAgICAgICAgICA8L3JlcXVlc3Q+CiAgICAgICAgICAgICAgICA8cmVzcG9uc2UgbmFtZT0iUmVzcG9uc2UiPgogICAgICAgICAgICAgICAgICAgIDxyZXByZXNlbnRhdGlvbiBtZWRpYVR5cGU9ImFwcGxpY2F0aW9uL3htbCIvPgogICAgICAgICAgICAgICAgICAgIDxyZXByZXNlbnRhdGlvbiBtZWRpYVR5cGU9ImFwcGxpY2F0aW9uL2pzb24iLz4KICAgICAgICAgICAgICAgIDwvcmVzcG9uc2U+CiAgICAgICAgICAgIDwvbWV0aG9kPgogICAgICAgICAgICA8cGFyYW0gbmFtZT0iY3VzdG9tZXJpZCIgc3R5bGU9ImhlYWRlciIgcmVxdWlyZWQ9ImZhbHNlIiBkZWZhdWx0PSIiPgogICAgICAgICAgICAgICAgPGRvYy8+CiAgICAgICAgICAgIDwvcGFyYW0+CiAgICAgICAgICAgIDxwYXJhbSBuYW1lPSJmaXJzdG5hbWUiIHN0eWxlPSJoZWFkZXIiIHJlcXVpcmVkPSJmYWxzZSIgZGVmYXVsdD0iIj4KICAgICAgICAgICAgICAgIDxkb2MvPgogICAgICAgICAgICA8L3BhcmFtPgogICAgICAgICAgICA8cGFyYW0gbmFtZT0ibGFzdG5hbWUiIHN0eWxlPSJoZWFkZXIiIHJlcXVpcmVkPSJmYWxzZSIgZGVmYXVsdD0iIj4KICAgICAgICAgICAgICAgIDxkb2MvPgogICAgICAgICAgICA8L3BhcmFtPgogICAgICAgICAgICA8cGFyYW0gbmFtZT0iYWdlIiBzdHlsZT0iaGVhZGVyIiByZXF1aXJlZD0iZmFsc2UiIGRlZmF1bHQ9IiI+CiAgICAgICAgICAgICAgICA8ZG9jLz4KICAgICAgICAgICAgPC9wYXJhbT4KICAgICAgICAgICAgPHBhcmFtIG5hbWU9ImVtYWlsIiBzdHlsZT0iaGVhZGVyIiByZXF1aXJlZD0iZmFsc2UiIGRlZmF1bHQ9IiI+CiAgICAgICAgICAgICAgICA8ZG9jLz4KICAgICAgICAgICAgPC9wYXJhbT4KICAgICAgICAgICAgPHBhcmFtIG5hbWU9ImNpdHkiIHN0eWxlPSJoZWFkZXIiIHJlcXVpcmVkPSJmYWxzZSIgZGVmYXVsdD0iIj4KICAgICAgICAgICAgICAgIDxkb2MvPgogICAgICAgICAgICA8L3BhcmFtPgogICAgICAgICAgICA8cGFyYW0gbmFtZT0iemlwY29kZSIgc3R5bGU9ImhlYWRlciIgcmVxdWlyZWQ9ImZhbHNlIiBkZWZhdWx0PSIiPgogICAgICAgICAgICAgICAgPGRvYy8+CiAgICAgICAgICAgIDwvcGFyYW0+CiAgICAgICAgICAgIDxwYXJhbSBuYW1lPSJ0cmFuc2FjdGlvbnN0YXR1cyIgc3R5bGU9ImhlYWRlciIgcmVxdWlyZWQ9ImZhbHNlIiBkZWZhdWx0PSIiPgogICAgICAgICAgICAgICAgPGRvYy8+CiAgICAgICAgICAgIDwvcGFyYW0+CiAgICAgICAgPC9yZXNvdXJjZT4KICAgIDwvcmVzb3VyY2VzPgo8L2FwcGxpY2F0aW9uPg==</WADLContent>            <restInputReferNode>                <xs:element xmlns:xs=http://www.w3.org/2001/XMLSchema name=Parameters>                    <xs:complexType>                        <xs:sequence>                            <xs:element name=Query minOccurs=0>                                <xs:complexType>                                    <xs:sequence>                                        <xs:element name=param type=xsd:string minOccurs=0/>                                    </xs:sequence>                                </xs:complexType>                            </xs:element>                            <xs:element name=Header minOccurs=0>                                <xs:complexType>                                    <xs:sequence>                                        <xs:element name=param type=xsd:string minOccurs=0/>                                    </xs:sequence>                                </xs:complexType>                            </xs:element>                            <xs:element name=Body minOccurs=0>                                <xs:complexType>                                    <xs:sequence>                                        <xs:element name=Form minOccurs=0>                                            <xs:complexType>                                                <xs:sequence>                                                    <xs:element name=param type=xsd:string minOccurs=0/>                                                </xs:sequence>                                            </xs:complexType>                                        </xs:element>                                        <xs:element name=Text minOccurs=0>                                            <xs:complexType>                                                <xs:sequence>                                                    <xs:element name=type type=xsd:string minOccurs=0/>                                                    <xs:element name=content type=xsd:string minOccurs=0/>                                                </xs:sequence>                                            </xs:complexType>                                        </xs:element>                                        <xs:element name=Binary minOccurs=0>                                            <xs:complexType>                                                <xs:sequence>                                                    <xs:element name=type type=xsd:string minOccurs=0/>                                                    <xs:element name=content type=xsd:base64Binary minOccurs=0/>                                                </xs:sequence>                                            </xs:complexType>                                        </xs:element>                                        <xs:element name=Multipart minOccurs=0 maxOccurs=unbounded>                                            <xs:complexType>                                                <xs:sequence>                                                    <xs:element name=content-disposition type=xsd:string minOccurs=0/>                                                    <xs:element name=name type=xsd:string minOccurs=0/>                                                    <xs:element name=filename type=xsd:string minOccurs=0/>                                                    <xs:element name=content-type type=xsd:string minOccurs=0/>                                                    <xs:element name=content-id type=xsd:string minOccurs=0/>                                                    <xs:element name=content minOccurs=0>                                                        <xs:complexType>                                                            <xs:choice>                                                                <xs:element name=binary type=xsd:base64Binary/>                                                                <xs:element name=text type=xsd:string/>                                                                <xs:element name=fileName type=xsd:string/>                                                            </xs:choice>                                                        </xs:complexType>                                                    </xs:element>                                                </xs:sequence>                                            </xs:complexType>                                        </xs:element>                                    </xs:sequence>                                </xs:complexType>                            </xs:element>                        </xs:sequence>                    </xs:complexType>                </xs:element>            </restInputReferNode>            <restOutputReferNode>                <xs:element xmlns:xs=http://www.w3.org/2001/XMLSchema name=header>                    <xs:complexType>                        <xs:sequence>                            <xs:element name=Server type=xsd:string minOccurs=0/>                            <xs:element name=Location type=xsd:string minOccurs=0/>                            <xs:element name=Allow type=xsd:string minOccurs=0/>                            <xs:element name=Date type=xsd:string minOccurs=0/>                            <xs:element name=Set-Cookie type=xsd:string minOccurs=0/>                            <xs:element name=Pragma type=xsd:string minOccurs=0/>                            <xs:element name=Content-Type type=xsd:string minOccurs=0/>                            <xs:element name=Content-Length type=xsd:string minOccurs=0/>                            <xs:element name=Content-Encoding type=xsd:string minOccurs=0/>                            <xs:element name=Content-Range type=xsd:string minOccurs=0/>                            <xs:element name=Last-Modifie type=xsd:string minOccurs=0/>                        </xs:sequence>                    </xs:complexType>                </xs:element>            </restOutputReferNode>        </config><?xml version=1.0 encoding=UTF-8?><ns0:inputBindings xmlns:ns0=http://xmlns.tibco.com/bw/process/2003>            <http:ActivityInput xmlns:ns1=http://www.tibco.com/namespaces/tnt/plugins/json>                <Parameters>                    <Header>                        <customerid>                            <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/ns2:customer/ns2:customerid/>                        </customerid>                        <firstname>                            <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/ns2:customer/ns2:firstname/>                        </firstname>                        <lastname>                            <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/ns2:customer/ns2:lastname/>                        </lastname>                        <age>                            <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/ns2:customer/ns2:age/>                        </age>                        <email>                            <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/ns2:customer/ns2:email/>                        </email>                        <city>                            <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/ns2:customer/ns2:city/>                        </city>                        <zipcode>                            <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/ns2:customer/ns2:zipcode/>                        </zipcode>                        <transactionstatus>                            <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/ns2:customer/ns2:transactionstatus/>                        </transactionstatus>                    </Header>                </Parameters>            </http:ActivityInput>        </ns0:inputBindings> "/><ee:transform xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/ee/core" name="Invoke_REST_API" type="RestActivity" posX="750" posY="35"><ee:message><ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+            <enableProtocolUI>WADL</enableProtocolUI>
+            <restMethodUI>POST</restMethodUI>
+            <restResponseType>JSON</restResponseType>
+            <authChoiceUI>No Authentication</authChoiceUI>
+            <WADLPaths>customerDetails</WADLPaths>
+            <WADLBaseURL>http://localhost:8085/orderCreateAPI</WADLBaseURL>
+            <restMethodIDUI>POST_CreateCustomer</restMethodIDUI>
+            <restURI>/orderCreateAPI/customerDetails</restURI>
+            <WADLReference>/WADL/OrderService.wadl</WADLReference>
+            <WADLContent>PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPGFwcGxpY2F0aW9uIHhtbG5zPSJodHRwOi8vd2FkbC5kZXYuamF2YS5uZXQvMjAwOS8wMiIgbmFtZT0iT3JkZXJTZXJ2aWNlIj4KICAgIDxyZXNvdXJjZXMgYmFzZT0iaHR0cDovL2xvY2FsaG9zdDo4MDg1L29yZGVyQ3JlYXRlQVBJIiBuYW1lPSJvcmRlckNyZWF0ZUFQSSI+CiAgICAgICAgPHJlc291cmNlIGlkPSJjdXN0b21lcnMiIHBhdGg9Ii9jdXN0b21lckRldGFpbHMiPgogICAgICAgICAgICA8bWV0aG9kIG5hbWU9IlBPU1QiIGlkPSJDcmVhdGVDdXN0b21lciI+CiAgICAgICAgICAgICAgICA8cmVxdWVzdCBuYW1lPSJSZXF1ZXN0Ij4KICAgICAgICAgICAgICAgICAgICA8cmVwcmVzZW50YXRpb24gbWVkaWFUeXBlPSJhcHBsaWNhdGlvbi9qc29uIi8+CiAgICAgICAgICAgICAgICA8L3JlcXVlc3Q+CiAgICAgICAgICAgICAgICA8cmVzcG9uc2UgbmFtZT0iUmVzcG9uc2UiPgogICAgICAgICAgICAgICAgICAgIDxyZXByZXNlbnRhdGlvbiBtZWRpYVR5cGU9ImFwcGxpY2F0aW9uL3htbCIvPgogICAgICAgICAgICAgICAgICAgIDxyZXByZXNlbnRhdGlvbiBtZWRpYVR5cGU9ImFwcGxpY2F0aW9uL2pzb24iLz4KICAgICAgICAgICAgICAgIDwvcmVzcG9uc2U+CiAgICAgICAgICAgIDwvbWV0aG9kPgogICAgICAgICAgICA8cGFyYW0gbmFtZT0iY3VzdG9tZXJpZCIgc3R5bGU9ImhlYWRlciIgcmVxdWlyZWQ9ImZhbHNlIiBkZWZhdWx0PSIiPgogICAgICAgICAgICAgICAgPGRvYy8+CiAgICAgICAgICAgIDwvcGFyYW0+CiAgICAgICAgICAgIDxwYXJhbSBuYW1lPSJmaXJzdG5hbWUiIHN0eWxlPSJoZWFkZXIiIHJlcXVpcmVkPSJmYWxzZSIgZGVmYXVsdD0iIj4KICAgICAgICAgICAgICAgIDxkb2MvPgogICAgICAgICAgICA8L3BhcmFtPgogICAgICAgICAgICA8cGFyYW0gbmFtZT0ibGFzdG5hbWUiIHN0eWxlPSJoZWFkZXIiIHJlcXVpcmVkPSJmYWxzZSIgZGVmYXVsdD0iIj4KICAgICAgICAgICAgICAgIDxkb2MvPgogICAgICAgICAgICA8L3BhcmFtPgogICAgICAgICAgICA8cGFyYW0gbmFtZT0iYWdlIiBzdHlsZT0iaGVhZGVyIiByZXF1aXJlZD0iZmFsc2UiIGRlZmF1bHQ9IiI+CiAgICAgICAgICAgICAgICA8ZG9jLz4KICAgICAgICAgICAgPC9wYXJhbT4KICAgICAgICAgICAgPHBhcmFtIG5hbWU9ImVtYWlsIiBzdHlsZT0iaGVhZGVyIiByZXF1aXJlZD0iZmFsc2UiIGRlZmF1bHQ9IiI+CiAgICAgICAgICAgICAgICA8ZG9jLz4KICAgICAgICAgICAgPC9wYXJhbT4KICAgICAgICAgICAgPHBhcmFtIG5hbWU9ImNpdHkiIHN0eWxlPSJoZWFkZXIiIHJlcXVpcmVkPSJmYWxzZSIgZGVmYXVsdD0iIj4KICAgICAgICAgICAgICAgIDxkb2MvPgogICAgICAgICAgICA8L3BhcmFtPgogICAgICAgICAgICA8cGFyYW0gbmFtZT0iemlwY29kZSIgc3R5bGU9ImhlYWRlciIgcmVxdWlyZWQ9ImZhbHNlIiBkZWZhdWx0PSIiPgogICAgICAgICAgICAgICAgPGRvYy8+CiAgICAgICAgICAgIDwvcGFyYW0+CiAgICAgICAgICAgIDxwYXJhbSBuYW1lPSJ0cmFuc2FjdGlvbnN0YXR1cyIgc3R5bGU9ImhlYWRlciIgcmVxdWlyZWQ9ImZhbHNlIiBkZWZhdWx0PSIiPgogICAgICAgICAgICAgICAgPGRvYy8+CiAgICAgICAgICAgIDwvcGFyYW0+CiAgICAgICAgPC9yZXNvdXJjZT4KICAgIDwvcmVzb3VyY2VzPgo8L2FwcGxpY2F0aW9uPg==</WADLContent>
+            <restInputReferNode>
+                <xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="Parameters">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Query" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="param" type="xsd:string" minOccurs="0"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="Header" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="param" type="xsd:string" minOccurs="0"/>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                            <xs:element name="Body" minOccurs="0">
+                                <xs:complexType>
+                                    <xs:sequence>
+                                        <xs:element name="Form" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="param" type="xsd:string" minOccurs="0"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="Text" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="type" type="xsd:string" minOccurs="0"/>
+                                                    <xs:element name="content" type="xsd:string" minOccurs="0"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="Binary" minOccurs="0">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="type" type="xsd:string" minOccurs="0"/>
+                                                    <xs:element name="content" type="xsd:base64Binary" minOccurs="0"/>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                        <xs:element name="Multipart" minOccurs="0" maxOccurs="unbounded">
+                                            <xs:complexType>
+                                                <xs:sequence>
+                                                    <xs:element name="content-disposition" type="xsd:string" minOccurs="0"/>
+                                                    <xs:element name="name" type="xsd:string" minOccurs="0"/>
+                                                    <xs:element name="filename" type="xsd:string" minOccurs="0"/>
+                                                    <xs:element name="content-type" type="xsd:string" minOccurs="0"/>
+                                                    <xs:element name="content-id" type="xsd:string" minOccurs="0"/>
+                                                    <xs:element name="content" minOccurs="0">
+                                                        <xs:complexType>
+                                                            <xs:choice>
+                                                                <xs:element name="binary" type="xsd:base64Binary"/>
+                                                                <xs:element name="text" type="xsd:string"/>
+                                                                <xs:element name="fileName" type="xsd:string"/>
+                                                            </xs:choice>
+                                                        </xs:complexType>
+                                                    </xs:element>
+                                                </xs:sequence>
+                                            </xs:complexType>
+                                        </xs:element>
+                                    </xs:sequence>
+                                </xs:complexType>
+                            </xs:element>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </restInputReferNode>
+            <restOutputReferNode>
+                <xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="header">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="Server" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Location" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Allow" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Date" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Set-Cookie" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Pragma" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Content-Type" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Content-Length" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Content-Encoding" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Content-Range" type="xsd:string" minOccurs="0"/>
+                            <xs:element name="Last-Modifie" type="xsd:string" minOccurs="0"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </restOutputReferNode>
+        </config>
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:inputBindings xmlns:ns0="http://xmlns.tibco.com/bw/process/2003">
+            <ee:ActivityInput xmlns:ns1="http://www.tibco.com/namespaces/tnt/plugins/json">
+                <Parameters>
+                    <Header>
+                        <customerid>
+                            <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Map-Data/ns2:customer/ns2:customerid"/>
+                        </customerid>
+                        <firstname>
+                            <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Map-Data/ns2:customer/ns2:firstname"/>
+                        </firstname>
+                        <lastname>
+                            <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Map-Data/ns2:customer/ns2:lastname"/>
+                        </lastname>
+                        <age>
+                            <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Map-Data/ns2:customer/ns2:age"/>
+                        </age>
+                        <email>
+                            <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Map-Data/ns2:customer/ns2:email"/>
+                        </email>
+                        <city>
+                            <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Map-Data/ns2:customer/ns2:city"/>
+                        </city>
+                        <zipcode>
+                            <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Map-Data/ns2:customer/ns2:zipcode"/>
+                        </zipcode>
+                        <transactionstatus>
+                            <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Map-Data/ns2:customer/ns2:transactionstatus"/>
+                        </transactionstatus>
+                    </Header>
+                </Parameters>
+            </ee:ActivityInput>
+        </ns0:inputBindings>}]]></ee:set-payload></ee:message></ee:transform><logger  level="USER" message="Order Handling REST  API Invocation Completed" /><logger  level="USER" message="Order Handling SOAP Service Invocation Completed" /></flow></mule>

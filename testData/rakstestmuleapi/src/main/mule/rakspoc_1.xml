@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<flow name="rakspoc_1Flow" doc:id="51d2a467-263e-4d5d-8f0d-a73139887bbd" >
+		<http:listener doc:name="Listener" doc:id="0e4ff7f8-f49a-4706-a752-8b6c5d6307a4" />
+		<logger level="INFO" doc:name="Logger" doc:id="ec2e8198-dd6d-4d8f-ba6c-26d51fc58578" message="test"/>
+		
+	</flow>
+</mule>

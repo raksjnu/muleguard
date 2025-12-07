@@ -1,0 +1,21 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:file="http://www.mulesoft.org/schema/mule/file" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd"><flow name="orderServiceFILEADAPTERPUBLISHER"><logger  level="USER" message="File Poller Order Service Started" /><ee:transform xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/ee/core" name="Parse_Data" type="ParseActivity" posX="190" posY="78"><ee:message><ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+            <InputType>String</InputType>
+            <Encoding>ASCII</Encoding>
+            <ParseSharedConfig>/DataFormat/OrderServiceDataFormat.sharedparse</ParseSharedConfig>
+        </config>
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:inputBindings xmlns:ns0="http://xmlns.tibco.com/bw/process/2003">
+            <Input>
+                <text>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$File-Poller/ee:EventSourceOuputTextClass/fileContent/textContent"/>
+                </text>
+                <noOfRecords>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="-1"/>
+                </noOfRecords>
+            </Input>
+        </ns0:inputBindings>}]]></ee:set-payload></ee:message></ee:transform><file:listener directory="/" config-ref="File_Config" path="/" <scheduling-strategy ><cron expression="migration-default" /></scheduling-strategy></file:listener><flow-ref name="createOrderAdapterPublisher"  doc:name="createOrder"  /><file:write config-ref="File_Config" path="/"  xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/file" name="Write_File" connector-ref="FILE_Configuration" path="concat($_globalVariables/ns3:GlobalVariables/Connections/FILE/outDir, Log.txt)" posX="554" posY="36" type="FileWriteActivity"/><logger  level="USER" message="File Poller Order Service Terminated" /><flow-ref name="LogandErrorHandlerDummy"  doc:name="LogandErrorHandler"  /></flow></mule>

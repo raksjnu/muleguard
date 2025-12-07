@@ -1,0 +1,46 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:db="http://www.mulesoft.org/schema/mule/db" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd"><flow name="LogandErrorHandler"><logger  level="ERROR" message="$Map-Data/log/msg                    <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/log/msgCode/>                " /><db:update  xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/db" config-ref="Database_Config" name="insertProcessErrors" posX="362" posY="418" type="JDBCUpdateActivity"><db:sql><![CDATA[insert into process_errors (processid ,  process_name ,  ERROR_DESCRIPTION ,errortime )
+values (?,?,?,?)
+
+                    <parameterName>process_id</parameterName>
+                    <dataType>VARCHAR</dataType>
+                </parameter>
+                <parameter>
+                    <parameterName>process_name</parameterName>
+                    <dataType>VARCHAR</dataType>
+                </parameter>
+                <parameter>
+                    <parameterName>error_description</parameterName>
+                    <dataType>VARCHAR</dataType>
+                </parameter>
+                <parameter>
+                    <parameterName>errortime</parameterName>
+                    <dataType>TIMESTAMP</dataType>
+                ]]></db:sql></db:update><logger  level="USER" message="concat('ERROR ********', $Start/root/pfx4:processCtx/pfx4:ProcessName,  -- ,   $Start/root/pfx4:ExceptionData/pfx4:Message)" /><logger  level="WARN" message="$Map-Data/log/msg                    <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/log/msgCode/>                " /><logger  level="INFO" message="$Map-Data/log/msg                    <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/log/msgCode/>                " /><logger  level="DEBUG" message="$Map-Data/log/msg                    <xsl:value-of xmlns:xsl=http://www.w3.org/1999/XSL/Transform select=$Map-Data/log/msgCode/>                " /><ee:transform xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/ee/core" name="Map_Data" type="MapperActivity" posX="96" posY="148"><ee:message><ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+            <element>
+                <xs:element xmlns:xs="http://www.w3.org/2001/XMLSchema" name="log">
+                    <xs:complexType>
+                        <xs:sequence>
+                            <xs:element name="msg" type="xsd:string"/>
+                            <xs:element name="msgCode" type="xsd:string"/>
+                        </xs:sequence>
+                    </xs:complexType>
+                </xs:element>
+            </element>
+        </config>
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:inputBindings xmlns:ns0="http://xmlns.tibco.com/bw/process/2003">
+            <log>
+                <xsl:variable xmlns:xsl="http://www.w3.org/1999/XSL/Transform" name="var" select="number($Start/root/pfx4:logLevel)"/>
+                <msg>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="concat(tib:tokenize(DEBUG|INFO|WARN|ERROR, |)[$var],  | ,$Start/root/pfx4:processCtx/pfx4:projectName,  | ,$Start/root/pfx4:processCtx/pfx4:ProcessName, $Start/root/pfx4:processCtx/pfx4:processId ,  | ,$Start/root/pfx4:description)"/>
+                </msg>
+                <msgCode>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select=""/>
+                </msgCode>
+            </log>
+        </ns0:inputBindings>}]]></ee:set-payload></ee:message></ee:transform></flow></mule>

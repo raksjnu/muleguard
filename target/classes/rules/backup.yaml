@@ -1,0 +1,238 @@
+# =============================================================================
+# MuleGuard Rules Configuration
+# Migration Scope: Mule 4.3.x/4.4.x/4.6.x → 4.9.0 + JDK 17 + Policy Modernization + RTF 4.3
+# Total Rules: 24
+# =============================================================================
+
+rules:
+ # ===========================================================================
+  # 1. POM.XML VALIDATIONS (RULE-001 to RULE-012)
+  # ===========================================================================
+
+  - id: "RULE-001"
+    name: "Adding correct MuleParentPom version in pom.xml"
+    description: "Parent pom must be com.raks.eapi:MuleParentPom:2.0.1"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: POM_PARENT
+        params:
+          groupId: "com.raks.eapi"
+          artifactId: "MuleParentPom"
+          versionPattern: "2.0.1"
+
+  - id: "RULE-002"
+    name: "Update mule.maven.plugin.version to 4.9.0 in pom.xml"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: POM_PROPERTY
+        params:
+          property: "mule.maven.plugin.version"
+          expectedValue: "4.9.0"
+
+  - id: "RULE-003"
+    name: "Remove old/unused Maven plugins"
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: POM_PLUGIN_REMOVED
+        params:
+          plugins:
+            - "maven-clean-plugin"
+            - "maven-surefire-plugin:2.22.0"
+
+  - id: "RULE-004"
+    name: "Remove spring-security-ldap and spring-security-web"
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: POM_DEPENDENCY_REMOVED
+        params:
+          dependencies:
+            - "org.springframework.security:spring-security-ldap"
+            - "org.springframework.security:spring-security-web"
+
+  - id: "RULE-005"
+    name: "Remove mule-module-spring-config"
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: POM_DEPENDENCY_REMOVED
+        params:
+          dependencies:
+            - "org.mule.modules:mule-module-spring-config"
+
+  - id: "RULE-006"
+    name: "Add apimuleutilities dependency (for ICE Encrypt upgrade)"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: POM_DEPENDENCY_ADDED
+        params:
+          groupId: "com.myorg.apim"
+          artifactId: "apimuleutilities"
+
+  - id: "RULE-007"
+    name: "Update DB2 dependency to new groupId"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: POM_DEPENDENCY_REPLACED
+        params:
+          old: "com.ibm.db2:db2jcc_license_cu"
+          newGroupId: "com.ibm.db2.jcc"
+          newArtifactId: "db2jcc"
+
+  # ===========================================================================
+  # 2. MULE-ARTIFACT.JSON VALIDATIONS (RULE-013 to RULE-015)
+  # ===========================================================================
+
+  - id: "RULE-013"
+    name: "minMuleVersion must be 4.9.0 in mule-artifact.json"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: MULE_ARTIFACT_JSON
+        params:
+          jsonPath: "$.minMuleVersion"
+          expectedValue: "4.9.0"
+
+  - id: "RULE-014"
+    name: "javaSpecificationVersions must be 17"
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: MULE_ARTIFACT_JSON
+        params:
+          jsonPath: "$.javaSpecificationVersions"
+          expectedValue: "17"
+
+  - id: "RULE-015"
+    name: "Remove non-mandatory keys from mule-artifact.json"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: MULE_ARTIFACT_JSON_REMOVE_KEYS
+        params:
+          keys:
+            - "bundlePluginVersion"
+            - "exportedPackages"
+            - "exportedResources"
+
+  # ===========================================================================
+  # 3. POLICY & SECURITY CONFIG (RULE-016 to RULE-020)
+  # ===========================================================================
+
+  - id: "RULE-016"
+    name: "Use composite policies instead of individual ones"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: XML_XPATH_NEGATIVE
+        params:
+          path: "src/main/mule/policy/*.xml"
+          xpath: "//rate-limiting | //client-id-enforcement"
+          description: "Old consumer policies must be removed"
+
+  - id: "RULE-017"
+    name: "Enable JSON log format"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: PROPERTY_FILE
+        params:
+          filePattern: "src/main/resources/properties/*-env.properties"
+          key: "logFormat"
+          expectedValue: "json"
+
+  - id: "RULE-018"
+    name: "Enable TLS 1.2 & 1.3 in CICD config"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: PROPERTY_FILE
+        params:
+          filePattern: "src/main/resources/cicd-config.properties"
+          key: "tls.enabledProtocols"
+          expectedValue: "TLSv1.2,TLSv1.3"
+
+  - id: "RULE-019"
+    name: "Update cipher suite for MQ connector"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: XML_ATTRIBUTE
+        params:
+          path: "src/main/mule/*-mq-config.xml"
+          xpath: "//mq:client-connection//tls:context"
+          attribute: "enabledCipherSuites"
+          expectedValue: "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+
+  - id: "RULE-020"
+    name: "Remove toApplicationCode from logger"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: XML_ELEMENT_REMOVED
+        params:
+          path: "src/main/mule/**/*.xml"
+          xpath: "//logger[@toApplicationCode]"
+
+  # ===========================================================================
+  # 4. DLP & LEGACY CLEANUP (RULE-021 to RULE-023)
+  # ===========================================================================
+
+  - id: "RULE-021"
+    name: "Remove DLP-related code from Mule flows"
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: FILE_CONTAINS_NEGATIVE
+        params:
+          path: "src/main/mule/*Flow.xml"
+          pattern: "dlp"
+
+  - id: "RULE-022"
+    name: "Remove DLP properties"
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: PROPERTY_REMOVED
+        params:
+          files:
+            - "src/main/resources/properties/*.properties"
+            - "src/main/resources/config/*.yaml"
+          keys:
+            - "dlp.enabled"
+            - "dlp.service.url"
+
+  - id: "RULE-023"
+    name: "ICE Encrypt → apimuleutilities migration"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: JAVA_METHOD_REMOVED
+        params:
+          classPattern: ".*JceEncrypt.*"
+          methodPattern: "jce-encrypt"
+      - type: JAVA_METHOD_CALL
+        params:
+          classPattern: ".*ApimEncryptUtil.*"
+          method: "encrypt"
+
+  # ===========================================================================
+  # 5. FINAL CLEANUP & RTF 4.3 PREP (RULE-024+)
+  # ===========================================================================
+
+  - id: "RULE-024"
+    name: "Set encrypt=false for MS-SQL with TrustServerCertificate"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: DB_CONNECTION_PROPERTY
+        params:
+          driver: "sqlserver"
+          property: "encrypt"
+          expectedValue: "false"
+          requiredProperty: "trustServerCertificate=true"

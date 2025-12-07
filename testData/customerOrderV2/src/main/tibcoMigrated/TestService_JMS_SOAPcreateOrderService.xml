@@ -1,0 +1,22 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:apikit-soap="http://www.mulesoft.org/schema/mule/apikit-soap" xmlns:cxf="http://www.mulesoft.org/schema/mule/cxf" xmlns:wsc="http://www.mulesoft.org/schema/mule/wsc" xmlns:http="http://www.mulesoft.org/schema/mule/http" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/cxf http://www.mulesoft.org/schema/mule/cxf/current/mule-cxf.xsd http://www.mulesoft.org/schema/mule/apikit-soap http://www.mulesoft.org/schema/mule/apikit-soap/current/mule-apikit-soap.xsd http://www.mulesoft.org/schema/mule/wsc http://www.mulesoft.org/schema/mule/ws/current/mule-ws.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd"><flow name="SOAPcreateOrderService"><ee:transform xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/ee/core" name="SOAPRequestReply" type="SOAPSendReceiveActivity" posX="301" posY="65"><ee:message><ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+            <timeout>0</timeout>
+            <soapAttachmentStyle>SwA</soapAttachmentStyle>
+            <timeoutType>Seconds</timeoutType>
+            <service>orderService</service>
+            <servicePort>createOrderEndpoint1</servicePort>
+            <operation>Operation</operation>
+            <soapAction>/Service/orderService.serviceagent/createOrderEndpoint1/Operation</soapAction>
+            <endpointURL>http://localhost:9090/Service/orderService.serviceagent/createOrderEndpoint1</endpointURL>
+            <authScheme>NONE</authScheme>
+        </config>
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:inputBindings xmlns:ns0="http://xmlns.tibco.com/bw/process/2003">
+            <inputMessage>
+                <xsl:copy-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Start/ns:customer"/>
+            </inputMessage>
+        </ns0:inputBindings>}]]></ee:set-payload></ee:message></ee:transform><wsc:consume xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/wsc" operation="Operation" config-ref="Web_Service_Consumer_Config" posX="301" posY="65"/></flow></mule>

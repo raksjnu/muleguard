@@ -1,0 +1,1 @@
+testvalue=error.muleMessage

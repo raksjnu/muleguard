@@ -1,0 +1,68 @@
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:db="http://www.mulesoft.org/schema/mule/db" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd"><flow name="createOrder"><db:update  xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/db" config-ref="Database_Config" name="UpdateCustomerTable" posX="257" posY="257" type="JDBCUpdateActivity"><db:sql><![CDATA[insert into customer (customerid , firstname ,  lastname , age , email , city , zip , transactionstatus) values(?,?,?,?,?,?,?,?)
+                        <parameterName>customerid</parameterName>
+                        <dataType>VARCHAR</dataType>
+                    </parameter>
+                    <parameter>
+                        <parameterName>firstname</parameterName>
+                        <dataType>VARCHAR</dataType>
+                    </parameter>
+                    <parameter>
+                        <parameterName>lastname</parameterName>
+                        <dataType>VARCHAR</dataType>
+                    </parameter>
+                    <parameter>
+                        <parameterName>age</parameterName>
+                        <dataType>SMALLINT</dataType>
+                    </parameter>
+                    <parameter>
+                        <parameterName>email</parameterName>
+                        <dataType>VARCHAR</dataType>
+                    </parameter>
+                    <parameter>
+                        <parameterName>city</parameterName>
+                        <dataType>VARCHAR</dataType>
+                    </parameter>
+                    <parameter>
+                        <parameterName>zipcode</parameterName>
+                        <dataType>VARCHAR</dataType>
+                    </parameter>
+                    <parameter>
+                        <parameterName>transactionstatus</parameterName>
+                        <dataType>VARCHAR</dataType>
+                    ]]></db:sql></db:update><ee:transform xmlns:ns0="http://www.mulesoft.org/schema/mule/core" xmlns:ns1="http://www.mulesoft.org/schema/mule/ee/core" name="Map_Data" type="MapperActivity" posX="412" posY="99"><ee:message><ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+            <element ref="ns:order"/>
+        </config>
+<?xml version="1.0" encoding="UTF-8"?>
+<ns0:inputBindings xmlns:ns0="http://xmlns.tibco.com/bw/process/2003">
+            <ee:order xmlns:ns1="http://xmlns.example.com/unique/default/namespace/1134438639123">
+                <ee:orderid>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select=""/>
+                </ee:orderid>
+                <ee:customerid>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Start/orderRequest/order/ns:customer/ns:customerid"/>
+                </ee:customerid>
+                <ee:firstname>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Start/orderRequest/order/ns:customer/ns:firstname"/>
+                </ee:firstname>
+                <ee:lastname>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="$Start/orderRequest/order/ns:customer/ns:lastname"/>
+                </ee:lastname>
+                <ee:productcode>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="UPS00"/>
+                </ee:productcode>
+                <ee:price>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="1000"/>
+                </ee:price>
+                <ee:discountstatus>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="if ($Start/orderRequest/order/ns:customer/ns:age>40) then Discount applied else Discount not eligible"/>
+                </ee:discountstatus>
+                <ee:orderdatetime>
+                    <xsl:value-of xmlns:xsl="http://www.w3.org/1999/XSL/Transform" select="current-dateTime()"/>
+                </ee:orderdatetime>
+            </ee:order>
+        </ns0:inputBindings>}]]></ee:set-payload></ee:message></ee:transform><flow-ref name="UpdatePayment"  doc:name="UpdateOrderDetails"  /><flow-ref name="LogandErrorHandler"  doc:name="Errorhandler"  /></flow></mule>

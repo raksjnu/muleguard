@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>MuleGuard Report - customerOrder_V3 (/Users/raks/Library/CloudStorage/OneDrive-IBM/Documents/GitHub/t2mtools/muleguard_runtimeupgrade/testData/customerOrder_V3)</title>
+    <style>
+        :root {
+            --truist-purple: #663399;
+            --truist-purple-light: #7d4fb2;
+            --text-white: #FFFFFF;
+        }
+        body {font-family: Arial, sans-serif; margin: 0; background-color: #f5f5f5;}
+        .report-container { border: 5px solid var(--truist-purple); padding: 20px 40px; margin: 20px; border-radius: 8px; background-color: white; }
+        h1 {color: var(--truist-purple);}
+        .summary {background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 20px;}
+        table {width: 100%; border-collapse: collapse; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
+        th, td {border: 1px solid #ddd; padding: 12px; text-align: left;}
+        th {background-color: var(--truist-purple); color: var(--text-white);}
+        .contact-button {
+            background-color: var(--truist-purple);
+            color: var(--text-white);
+            border: none;
+            padding: 12px 24px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            font-weight: bold;
+            margin-top: 25px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .contact-button:hover { background-color: var(--truist-purple-light); }
+    </style>
+</head>
+<body>
+    <div class="report-container">
+        <h1>MuleGuard API Validation Report</h1>
+        <div class="summary">
+            <strong>Project:</strong> customerOrder_V3 (/Users/raks/Library/CloudStorage/OneDrive-IBM/Documents/GitHub/t2mtools/muleguard_runtimeupgrade/testData/customerOrder_V3)<br>
+            <strong>Generated:</strong> 2025-12-04T13:47:08.482410<br>
+            <strong>Total Rules:</strong> 15 | <strong style="color:green">Passed:</strong> 13 | <strong style="color:red">Failed:</strong> 2
+        </div>
+        <table><tr><th>Rule ID</th><th>Name</th><th>Severity</th><th>Status</th><th>Details</th></tr><tr style='background-color:#e8f5e9'><td>RULE-000</td><td>Generic Code Check</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-001</td><td>Update pom parent: MuleParentPom version:LATEST</td><td>LOW</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-002</td><td>Update pom property: mule.maven.plugin.version to 4.9.0</td><td>LOW</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-004</td><td>Remove pom dependency: spring-security-ldap, spring-security-web, mule-module-spring-config, and db2jcc_license_cu</td><td>MEDIUM</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-005</td><td>Validate IBM MQ Connector Cipher Suite</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-006</td><td>Add pom dependency: apimuleutilities for JCE Encrypt/Decrypt</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-008</td><td>Check for api-gateway:autodiscovery</td><td>MEDIUM</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-009</td><td>Remove unsupported error handling expressions</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-010</td><td>Remove unsupported from/to ApplicationCode attributes</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-011</td><td>Check for DLP references</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-012</td><td>Check for legacy JCE PBE encryption algorithm</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-013</td><td>Check for 'type' attribute in crypto:jce-config</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-014</td><td>Check for toBase64 in set-variable</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#ffebee'><td>RULE-003</td><td>Remove pom plugin: maven-clean-plugin</td><td>MEDIUM</td><td><strong style='color:red'>FAIL</strong></td><td>• Found forbidden plugins:
+• org.apache.maven.plugins:maven-clean-plugin:3.0.0</td></tr><tr style='background-color:#ffebee'><td>RULE-007</td><td>Validate mule-artifact.json (Mule 4.9+, Java 17, secureProperties)</td><td>HIGH</td><td><strong style='color:red'>FAIL</strong></td><td>• mule-artifact.json validation failed:
+• Field 'minMuleVersion' must be at least '4.9.0' (found: '4.9.-1')
+• secureProperties element is missing</td></tr></table>
+        <a href="../checklist.html" class="contact-button" title="View all validation checklist items.">Checklist</a>
+        <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Runbook.">Runbook</a>
+        <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Developer Playbook.">Dev Playbook</a>
+        <a href="mailto:rakesh.kumar@ibm.com" class="contact-button" title="pl contact Rakesh for more details about this tool." style="margin-left: 10px;">Contact</a>
+    </div>
+</body>
+</html>

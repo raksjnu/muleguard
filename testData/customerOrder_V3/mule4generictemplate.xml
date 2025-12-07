@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="a8e073da-2384-457d-a3db-616a04a012d8" >
+		<http:listener-connection host="0.0.0.0" port="${http.private.port}" />
+	</http:listener-config>
+	<flow name="mule4generictemplateFlow" doc:id="8bba17d9-297f-40b7-9ca9-8429b7aca0d8" >
+		<http:listener doc:name="Listener" doc:id="51e7f003-7ef9-4867-954a-e681b2de74ad" config-ref="HTTP_Listener_config" path="/testing"/>
+		<flow-ref doc:name="invoke operation flow" doc:id="86b3989b-afa4-4d2e-8f83-b27ebde16ecf" name="generictemplate-innerflow"/>
+	</flow>
+	<flow name="generictemplate-innerflow" doc:id="f67239db-433a-410f-b7bf-33d40b47ee0d" >
+		<flow-ref doc:name="Flow Reference" doc:id="762e75f8-efca-4f52-a036-b11c7b0ef1d8" name="setLogVariables"/>
+		<raise-error doc:name="Raise error" doc:id="05e1de7f-2901-4675-ad1b-f1bdff12ed84" type="SECURITY" description="Connection Error from Inner Flow"/>
+		<set-payload value="payload from Inner Flow" doc:name="Set Payload" doc:id="f413f880-3eee-44c8-817b-8cdfa5a19391" />
+	</flow>
+</mule>

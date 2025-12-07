@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="error-handling-subflowError_Handler" doc:id="a5010847-3055-4299-9019-a8cdeeaa2051" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6d0f3a9d-850a-4bad-8bf2-e08669018fd8" type="EXPRESSION">
+			<ee:transform doc:name="Transform Message" doc:id="ccb8cdd2-6e4a-4e4d-a64d-556c0f26ea0f" >
+				<ee:message >
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="operationname" ><![CDATA[%dw 2.0
+output application/java
+---
+"maintainStopFeeinfo"]]></ee:set-variable>
+					<ee:set-variable variableName="errorCode" ><![CDATA['100']]></ee:set-variable>
+					<ee:set-variable variableName="errorDescription" ><![CDATA[%dw 2.0
+output application/java
+---
+'testing']]></ee:set-variable>
+					<ee:set-variable variableName="httpStatus" ><![CDATA[500]]></ee:set-variable>
+					<ee:set-variable variableName="errorType" ><![CDATA['Business Exception']]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="3a9ebe04-8ad7-4ab4-a53e-c3acd397a798" name="error-handling-subflowFlow"/>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="27429ae8-1f63-4890-97b1-748337bec72a" type="ROUTING">
+			<ee:transform doc:name="Transform Message" doc:id="5efaf7c5-a1c0-4c86-94a4-82e4dce61d75" >
+				<ee:message >
+					<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+				</ee:message>
+				<ee:variables >
+					<ee:set-variable variableName="operationname" ><![CDATA[%dw 2.0
+output application/java
+---
+"maintainStopFeeinfo"]]></ee:set-variable>
+					<ee:set-variable variableName="errorCode" ><![CDATA['100']]></ee:set-variable>
+					<ee:set-variable variableName="errorDescription" ><![CDATA[%dw 2.0
+output application/java
+---
+'testing']]></ee:set-variable>
+					<ee:set-variable variableName="httpStatus" ><![CDATA[500]]></ee:set-variable>
+					<ee:set-variable variableName="errorType" ><![CDATA['Business Exception']]></ee:set-variable>
+				</ee:variables>
+			</ee:transform>
+			<flow-ref doc:name="Flow Reference" doc:id="0c2e3608-311a-4cb7-a343-3dcba16cd549" name="error-handling-subflowFlow"/>
+		</on-error-continue>
+	</error-handler>
+	<flow name="error-handling-subflowFlow" doc:id="d05d85e4-83fd-41ee-ab9e-eca5a3cb08bd" >
+		<choice doc:name="Choice" doc:id="64cf37ee-3404-4d79-969f-f1ae72125fd9" >
+			<when expression="#[vars.assetType != 'SOAP']">
+				<flow-ref doc:name="Flow Reference" doc:id="0330880d-3299-4cdb-bc97-02fb94f67b2c" name="prepare-rest-error-response"/>
+			</when>
+			<otherwise >
+				<flow-ref doc:name="Flow Reference" doc:id="3df4b685-5a6e-4c04-a245-92873bddb24d" name="prepare-soap-error-response"/>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="prepare-rest-error-response" doc:id="32b32b6c-783d-4c1a-95f0-964d85bc42f3" >
+		<ee:transform doc:name="Transform Message" doc:id="bebefaac-487d-419b-9ef9-e815da4bdee9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"exception":
+	[{
+		"errorType": vars.errorType default "unknown",
+		"errorCode":vars.errorCode default ((error.errorType.namespace default "") ++ "::" ++ (error.errorType.identifier default "")),
+		"errorMessage":vars.errorDescription default (error.detailedDescription)
+	}]
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="prepare-soap-error-response" doc:id="cc146370-07c8-4b84-abed-e36043bf29a2" >
+		<ee:transform doc:name="Transform Message" doc:id="0cbc8a07-c542-411c-8d3c-4856a975bd87" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+
+ns soapenv http://schemas.xmlsoap.org/soap/envelope
+ns intg http://sti.com/Service/Intg/Deposit/Inquiry/ServiceSpecification/DepositinquiryIntg
+---
+{
+	soapenv#soapEnvelope:{
+		Body:{
+			faultcode: "mfaultCode",
+			faultString: 'faultType' ++ vars.errorType ++ 'faultcode' ++ vars.errorCode ++ ', message ='
+			++ vars.errorDescription ++ ', faultState' ++ 'faultState',
+			detail: if(vars.operationName == 'retrieveStopFeeInfo')
+			{
+				intg#retrieveStopFeefaultInfo: {
+					faultInfo:{
+						faultType: vars.errorType,
+						faultCode: vars.errorCode,
+						message: vars.errorDescription,
+						faultState: 'depositaccountinquiry.retrieveStopFee.faultState'
+					}
+				}
+			}
+			else "unknown Error"
+			
+			
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<sub-flow name="setLogVariables" doc:id="a6f99f97-0919-4056-8601-1160d3538999" >
+		<set-variable value="soap" doc:name="Asset Type" doc:id="a6dd482c-4e2b-4465-9883-c2e15998aa64" variableName="assetType"/>
+		<set-variable value="#[import * from modules::CommonUtil&#10;output application/java&#10;---&#10;getClientId(attributes.queryParams.clientId, attributes.headers['client_id'],attributes.headers['authorization'])]" doc:name="Set client Id" doc:id="7bcc153b-a058-447d-af47-dea2efafe89d" variableName="clientId"/>
+		<set-variable value="retrieveOffers" doc:name="Set OperationName" doc:id="b6197e5f-e2eb-4a79-997a-1d5833ec606e" variableName="operationname"/>
+		<set-variable value="#[attributes.headers.'x-forwarded-for' default &quot;&quot;]" doc:name="Set ConsumerIPAddress" doc:id="21068844-d472-42b4-bfe3-1101b046e6c6" variableName="consumerIPAddress"/>
+		<set-variable value="#[correlationId]" doc:name="Set CorrelationId" doc:id="de88eb54-69ce-4e68-8933-1c2f0d147b0b" variableName="correlationId"/>
+		<set-variable value="#[attributes.headers.'x-forwarded-for']" doc:name="Set CompositeHeader" doc:id="05f3c766-c50f-4094-b6d7-7a8bc868fd0b" variableName="compositeHeader"/>
+		<set-variable value="fromAppCode" doc:name="Set fromAppCode" doc:id="082dd5ec-390e-4923-940b-394051074300" variableName="fromAppCode"/>
+		<set-variable value="#[payload]" doc:name="Set inputpayload" doc:id="4eb8fe13-8da8-48e9-ac5e-406c76271a82" variableName="inputPayload"/>
+		<set-variable value="logs" doc:name="Set logLevel" doc:id="9d55b606-cf9c-4620-ae1c-56f2fcb2f488" variableName="loglevel"/>
+	</sub-flow>
+</mule>
