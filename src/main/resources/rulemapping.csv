@@ -26,3 +26,5 @@ The token tobase64 from set-variable node in any mule xml file should be removed
 Generic Config Check which Scans configured files for configured tokens in config folder. Fails if tokens are found., Config, RULE-100
 The property 'LogJsonFormat' must be present in all environment .properties files.,Config,RULE-101
 The policy property 'rakspolicyproperty2.policypropname' and 'rakspolicyproperty' must be present in all environment .policy files.,Config,RULE-102
+The Secure encrypted properties must follow the pattern: secure::<name>=^{<encrypted-value>=}.,Config,RULE-104
+The authorization policy client ID mappings must follow the pattern: truist.authz.policy.clientIDmap.<METHOD>:/<path>=<id>:<name>;<id>:<name>;...,Config,RULE-104

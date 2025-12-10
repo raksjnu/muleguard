@@ -83,14 +83,33 @@ This will generate:
 After running the tool, the output directory will look something like this:
 
 ```
-output/
-├── CONSOLIDATED-REPORT.html
-├── CONSOLIDATED-REPORT.xlsx
-├── checklist.html
-├── my-api-1/
-|   ├── report.html
-|   └── report.xlsx
-└── my-api-2/
-    ├── report.html
-    └── report.xlsx
-```
+
+## License & Attribution
+
+MuleGuard is distributed under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
+
+### Third-Party Dependencies
+
+This software includes the following open-source components:
+
+- **DOM4J** - XML parsing library  
+  Copyright © 2001-2016 MetaStuff, Ltd. and DOM4J contributors  
+  Licensed under the BSD-3-Clause License  
+  https://dom4j.github.io/
+
+- **Apache POI**, **Apache Commons IO**, **Apache Commons Text**, **Apache Maven Model**, **Log4j**  
+  Licensed under the Apache License 2.0  
+  https://www.apache.org/licenses/LICENSE-2.0
+
+- **SnakeYAML**, **Jackson**, **Picocli**, **Jaxen**  
+  Licensed under the Apache License 2.0  
+  https://www.apache.org/licenses/LICENSE-2.0
+
+For a complete list of dependencies and their versions, see `pom.xml`.
+
+### Security
+
+For security vulnerabilities or concerns, please contact: **raksjnu@gmail.com**
+
+**Last Security Audit**: December 2025  
+**Status**: All dependencies updated to secure versions (see `SECURITY_COMPLIANCE_REPORT.md`)

@@ -23,7 +23,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
+                <groupId>org.apache.maven.plugins2</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
                 <version>3.0.0</version>
             </plugin>

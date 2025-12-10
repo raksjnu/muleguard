@@ -1,7 +1,7 @@
 # =============================================================================
 # MuleGuard Rules Configuration
 # Migration Scope: Mule 4.3.x/4.4.x/4.6.x → 4.9.0 + JDK 17 + Policy Modernization + RTF 4.3
-# Total Rules: 24
+# Total Checklist: more than 25
 #Author: Rakesh Kumar (rakesh.kumar@ibm.com, raksjnu@gmail.com)
 # =============================================================================
 
@@ -45,7 +45,7 @@ rules:
             - "src/main/mule/*.xml"
             - "src/main/resources/*.dwl"
           tokens:
-            - "seceure:"
+            - "DONT_USE"
   - id: "RULE-001"
     name: "Update pom parent: MuleParentPom version:LATEST"
     description: "Parent pom must be com.raks.eapi:MuleParentPom:LATEST"
@@ -75,6 +75,7 @@ rules:
     checks:
       - type: POM_PLUGIN_REMOVED
         params:
+          validationType: PLUGIN_NOT_EXISTS
           plugins:
             - "org.apache.maven.plugins:maven-clean-plugin"
             - "org.apache.maven.plugins:maven-surefire-plugin"
@@ -86,13 +87,20 @@ rules:
     checks:
       - type: POM_DEPENDENCY_REMOVED
         params:
+          validationType: DEPENDENCY_NOT_EXISTS
           dependencies:
-            - "org.springframework.security:spring-security-ldap"
-            - "org.springframework.security:spring-security-web"
-            - "org.mule.modules:mule-module-spring-config"
-            - "com.ibm.db2:db2jcc_license_cu"
-            - "com.mulesoft.mule.core:mule-core-ee"
-            - "com.mulesoft.mule.runtime.modules:mule-module-spring-config-ee"
+            - groupId: "org.springframework.security"
+              artifactId: "spring-security-ldap"
+            - groupId: "org.springframework.security"
+              artifactId: "spring-security-web"
+            - groupId: "org.mule.modules"
+              artifactId: "mule-module-spring-config"
+            - groupId: "com.ibm.db2"
+              artifactId: "db2jcc_license_cu"
+            - groupId: "com.mulesoft.mule.core"
+              artifactId: "mule-core-ee"
+            - groupId: "com.mulesoft.mule.runtime.modules"
+              artifactId: "mule-module-spring-config-ee"
   - id: "RULE-005" 
     name: "Validate IBM MQ Connector Cipher Suite"
     description: "The IBM MQ connector configuration must use the approved cipher suite."
@@ -101,8 +109,10 @@ rules:
     checks:
       - type: IBM_MQ_CIPHER_CHECK
         params:
-          xpath: "//ibm-mq:connection/@cipherSuite"
+          validationType: ATTRIBUTE_VALUE
+          xpath: "//*[local-name()='connection']/@cipherSuite"
           expectedValue: "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+          propertyResolution: true
 
   - id: "RULE-006"
     name: "Add pom dependency: apimuleutilities for JCE Encrypt/Decrypt"
@@ -111,8 +121,10 @@ rules:
     checks:
       - type: POM_DEPENDENCY_ADDED
         params:
-          groupId: "com.raks.eapi"
-          artifactId: "apimuleutilities"
+          validationType: DEPENDENCY_EXISTS
+          dependencies:
+            - groupId: "com.raks.eapi"
+              artifactId: "apimuleutilities"
 
   - id: "RULE-007"
     name: "Validate mule-artifact.json (Mule 4.9+, Java 17, secureProperties)"
@@ -137,6 +149,7 @@ rules:
     checks:
       - type: XML_XPATH_EXISTS
         params:
+          validationType: EXISTS
           path: "src/main/mule/*.xml"
           xpath: "//*[local-name()='autodiscovery']"
           #xpath: "//*[local-name()='module-loggingconnector:request_in']"
@@ -164,16 +177,21 @@ rules:
     checks:
       - type: UNSUPPORTED_XML_ATTRIBUTE
         params:
+          validationType: FORBIDDEN_ATTRIBUTE
           path: "src/main/mule/*.xml"
           elements:
             - "request_in"
             - "request_out"
             - "response_in"
             - "response_out"
+            - "ee:transform"
+            
           attributes:
             - "fromApplicationCode"
             - "toApplicationCode"
+            - "doc:id"
 
+  # RULE-011: Token search in specific files - REUSABLE!
   - id: "RULE-011"
     name: "Check for DLP references"
     description: "Scans for specific DLP-related property references in configuration and property files."
@@ -182,13 +200,17 @@ rules:
     checks:
       - type: DLP_REFERENCE_CHECK
         params:
-          files:
+          # Add more file patterns if needed
+          filePatterns:
             - "mule/http-proxy.xml"
             - "resources/*.properties"
+          # Add more tokens to search for
           tokens:
             - "north.bound.dlp.flag"
             - "south.bound.dlp.flag"
             - "wmq.dlp.requestqueue"
+          searchMode: FORBIDDEN
+          matchMode: SUBSTRING
 
   - id: "RULE-012"
     name: "Check for legacy JCE PBE encryption algorithm"
@@ -198,6 +220,7 @@ rules:
     checks:
       - type: CRYPTO_JCE_ENCRYPT_PBE_CHECK
         params:
+          validationType: FORBIDDEN_VALUE
           path: "src/main/mule/*.xml"
           elementName: "crypto:jce-encrypt-pbe"
           forbiddenValue: "PBEWithHmacSHA256AndAES_256"
@@ -210,6 +233,7 @@ rules:
     checks:
       - type: CRYPTO_JCE_CONFIG_TYPE_CHECK
         params:
+          validationType: ATTRIBUTE_EXISTS
           path: "src/main/mule/*.xml"
           elementName: "crypto:jce-config"
           requiredAttribute: "type"
@@ -222,8 +246,11 @@ rules:
     checks:
       - type: FORBIDDEN_TOKEN_IN_ELEMENT
         params:
+          filePatterns: ["src/main/mule/*.xml"]
+          tokens: ["toBase64"]
           elementName: "set-variable"
-          forbiddenToken: "toBase64"
+          searchMode: FORBIDDEN
+          matchMode: ELEMENT_ATTRIBUTE
 
   # =============================================================================
   # Configuration Rules (100-199)
@@ -237,7 +264,8 @@ rules:
       - type: "SUBSTRING_TOKEN_CHECK"
         params:
           filePatterns:
-            - "**/Properties/**/*.properties"
+            #- "**/Properties/**/*.properties"
+            - ".properties"
           tokens:
             - "apiidi"
   - id: "RULE-101"
@@ -268,4 +296,58 @@ rules:
             - "rakspolicyproperty"
             - "rakspolicyproperty2.policypropname"
           fileExtensions: 
+            - ".policy"
+          parseMode: "SUBSTRING_SEARCH"
+
+  # Regex Pattern Validation for Policy Files
+  - id: "RULE-103"
+    name: "Validate policy files for correct policy details"
+    description: "Validates that .policy files contain required policy properties with correct versions."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: GENERIC_PROPERTY_FILE
+        description: "Check for required policy properties and versions"
+        params:
+          parseMode: "REGEX_PATTERN"
+          fileExtensions:
+            - ".policy"
+          regexPatterns:
+            # Header Injection Policy
+            - "headerinjection.policy.applied=true"
+            - "headerinjection.policy.version=1.3.2"
+            
+            # Rate Limit Policy
+            - "ratelimit.policy.applied=true"
+            - "ratelimit.policy.version=1.4.2"
+            
+            # Composite Authentication Policy
+            - "truist.compositeauthn.policy.applied=true"
+            - "truist.compositeauthn.policy.version=3.0.0"
+            
+            # Authorization Policy
+            - "truist.authz.policy.applied=true"
+            - "truist.authz.policy.version=3.0.0"
+
+  # Custom Validator for Properties Files (Regex patterns in Java code ; this is the only rule where regex is implemented in java code instead of yaml config file regex as logic was failing multiple times.)
+  - id: "RULE-104"
+    name: "Validate properties files for correct property details"
+    description: "Validates that .properties files contain required configuration properties using custom validators."
+    enabled: true
+    severity: MEDIUM
+    checks:
+      # Secure encrypted properties - using custom validator
+      - type: CLIENTIDMAP_VALIDATOR
+        description: "Validate secure encrypted properties"
+        params:
+          validationType: "SECURE"
+          fileExtensions:
+            - ".properties"
+      
+      # Client ID mapping validation - using custom validator with strict format checking
+      - type: CLIENTIDMAP_VALIDATOR
+        description: "Validate authorization policy client ID mappings"
+        params:
+          validationType: "CLIENTIDMAP"
+          fileExtensions:
             - ".policy"

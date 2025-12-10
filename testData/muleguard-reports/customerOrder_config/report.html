@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>MuleGuard Report - customerOrder_config (/Users/raks/Library/CloudStorage/OneDrive-IBM/Documents/GitHub/t2mtools/muleguard_runtimeupgrade/testData/customerOrder_config)</title>
+    <title>MuleGuard Report - customerOrder_config (.\testData\customerOrder_config)</title>
     <style>
         :root {
             --truist-purple: #663399;
@@ -10,7 +10,7 @@
             --text-white: #FFFFFF;
         }
         body {font-family: Arial, sans-serif; margin: 0; background-color: #f5f5f5;}
-        .report-container { border: 5px solid var(--truist-purple); padding: 20px 40px; margin: 20px; border-radius: 8px; background-color: white; }
+        .report-container { border: 5px solid var(--truist-purple); padding: 20px 40px; margin: 20px; border-radius: 8px; background-color: white; position: relative; }
         h1 {color: var(--truist-purple);}
         .summary {background: #e3f2fd; padding: 20px; border-radius: 8px; margin-bottom: 20px;}
         table {width: 100%; border-collapse: collapse; box-shadow: 0 4px 12px rgba(0,0,0,0.1);}
@@ -33,17 +33,59 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         .contact-button:hover { background-color: var(--truist-purple-light); }
+        .dashboard-button {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            background-color: var(--truist-purple);
+            color: var(--text-white);
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .dashboard-button:hover { background-color: var(--truist-purple-light); }
     </style>
 </head>
 <body>
     <div class="report-container">
+        <a href="../CONSOLIDATED-REPORT.html" class="dashboard-button" title="Return to main dashboard">← Dashboard</a>
         <h1>MuleGuard API Validation Report</h1>
         <div class="summary">
-            <strong>Project:</strong> customerOrder_config (/Users/raks/Library/CloudStorage/OneDrive-IBM/Documents/GitHub/t2mtools/muleguard_runtimeupgrade/testData/customerOrder_config)<br>
-            <strong>Generated:</strong> 2025-12-04T13:47:08.797562<br>
-            <strong>Total Rules:</strong> 3 | <strong style="color:green">Passed:</strong> 3 | <strong style="color:red">Failed:</strong> 0
+            <strong>Project:</strong> customerOrder_config (.\testData\customerOrder_config)<br>
+            <strong>Generated:</strong> 2025-12-09T21:56:18.135271600<br>
+            <strong>Total Rules:</strong> 5 | <strong style="color:green">Passed:</strong> 3 | <strong style="color:red">Failed:</strong> 2
         </div>
-        <table><tr><th>Rule ID</th><th>Name</th><th>Severity</th><th>Status</th><th>Details</th></tr><tr style='background-color:#e8f5e9'><td>RULE-100</td><td>Generic Config Check</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-101</td><td>Check for environment config property</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-102</td><td>Check for required policy properties</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr></table>
+        <table><tr><th>Rule ID</th><th>Name</th><th>Severity</th><th>Status</th><th>Details</th></tr><tr style='background-color:#e8f5e9'><td>RULE-100</td><td>Generic Config Check</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-101</td><td>Check for environment config property</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#e8f5e9'><td>RULE-102</td><td>Check for required policy properties</td><td>HIGH</td><td><strong style='color:green'>PASS</strong></td><td>All checks passed</td></tr><tr style='background-color:#ffebee'><td>RULE-103</td><td>Validate policy files for correct policy details</td><td>HIGH</td><td><strong style='color:red'>FAIL</strong></td><td>• Validation failures:
+• Pattern 'headerinjection.policy.applied=true' not matched in file: Policies\TDV.policy
+• Pattern 'headerinjection.policy.version=1.3.2' not matched in file: Policies\TDV.policy
+• Pattern 'ratelimit.policy.applied=true' not matched in file: Policies\TDV.policy
+• Pattern 'ratelimit.policy.version=1.4.2' not matched in file: Policies\TDV.policy
+• Pattern 'truist.compositeauthn.policy.applied=true' not matched in file: Policies\TDV.policy
+• Pattern 'truist.compositeauthn.policy.version=3.0.0' not matched in file: Policies\TDV.policy
+• Pattern 'truist.authz.policy.applied=true' not matched in file: Policies\TDV.policy
+• Pattern 'truist.authz.policy.version=3.0.0' not matched in file: Policies\TDV.policy
+• Pattern 'headerinjection.policy.applied=true' not matched in file: Policies\TDV1.policy
+• Pattern 'headerinjection.policy.version=1.3.2' not matched in file: Policies\TDV1.policy
+• Pattern 'ratelimit.policy.applied=true' not matched in file: Policies\TDV1.policy
+• Pattern 'ratelimit.policy.version=1.4.2' not matched in file: Policies\TDV1.policy
+• Pattern 'truist.compositeauthn.policy.applied=true' not matched in file: Policies\TDV1.policy
+• Pattern 'truist.compositeauthn.policy.version=3.0.0' not matched in file: Policies\TDV1.policy
+• Pattern 'truist.authz.policy.applied=true' not matched in file: Policies\TDV1.policy
+• Pattern 'truist.authz.policy.version=3.0.0' not matched in file: Policies\TDV1.policy</td></tr><tr style='background-color:#ffebee'><td>RULE-104</td><td>Validate properties files for correct property details</td><td>MEDIUM</td><td><strong style='color:red'>FAIL</strong></td><td>• No valid properties matching the CLIENTIDMAP pattern found in environment files.
+Files scanned: Policies\TDV.policy, Policies\TDV1.policy
+Expected pattern: truist.authz.policy.clientIDmap.&lt;METHOD&gt;:/&lt;path&gt;=&lt;id&gt;:&lt;name&gt;;&lt;id&gt;:&lt;name&gt;;...
+Check that your files contain the required properties with correct format.<br>• No valid properties matching the SECURE pattern found in environment files.
+Files scanned: Properties\OCP\ITE.properties
+Expected pattern: secure::&lt;name&gt;=^{&lt;encrypted-value&gt;=}
+Check that your files contain the required properties with correct format.</td></tr></table>
         <a href="../checklist.html" class="contact-button" title="View all validation checklist items.">Checklist</a>
         <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Runbook.">Runbook</a>
         <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Developer Playbook.">Dev Playbook</a>
