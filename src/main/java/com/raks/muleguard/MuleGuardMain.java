@@ -26,6 +26,7 @@ public class MuleGuardMain {
 
     public static void main(String[] args) {
         Path parentFolder;
+        String configFilePath = null;
 
         if (args.length == 0 || args[0].isEmpty()) {
             parentFolder = showFolderDialog();
@@ -35,8 +36,15 @@ public class MuleGuardMain {
             }
         } else if (args.length >= 2 && "-p".equals(args[0])) {
             parentFolder = Paths.get(args[1]);
+
+            // Check for optional --config parameter
+            if (args.length >= 4 && "--config".equals(args[2])) {
+                configFilePath = args[3];
+                System.out.println("Using custom config file: " + configFilePath);
+            }
         } else {
-            System.err.println("Usage: java -jar muleguard.jar -p <folder>   OR   double-click to select folder");
+            System.err.println(
+                    "Usage: java -jar muleguard.jar -p <folder> [--config <rules.yaml>]   OR   double-click to select folder");
             return;
         }
 
@@ -48,7 +56,7 @@ public class MuleGuardMain {
         System.out.println("Starting MuleGuard validation on: " + parentFolder);
         System.out.println("Scanning for Mule API projects...\n");
 
-        RootWrapper configWrapper = loadConfig();
+        RootWrapper configWrapper = loadConfig(configFilePath);
         List<Rule> allRules = configWrapper.getRules();
         String configFolderPattern = configWrapper.getConfig().getFolderPattern();
         int configRuleStart = configWrapper.getConfig().getRules().get("start");
@@ -170,7 +178,7 @@ public class MuleGuardMain {
         // continue running
     }
 
-    private static RootWrapper loadConfig() {
+    private static RootWrapper loadConfig(String configFilePath) {
         LoaderOptions options = new LoaderOptions();
         Constructor constructor = new Constructor(RootWrapper.class, options);
         TypeDescription td = new TypeDescription(RootWrapper.class);
@@ -178,7 +186,23 @@ public class MuleGuardMain {
         constructor.addTypeDescription(td);
 
         Yaml yaml = new Yaml(constructor);
-        InputStream input = MuleGuardMain.class.getClassLoader().getResourceAsStream("rules/rules.yaml");
+        InputStream input;
+
+        // If custom config file path is provided, use it; otherwise use embedded
+        // rules.yaml
+        if (configFilePath != null && !configFilePath.isEmpty()) {
+            try {
+                input = Files.newInputStream(Paths.get(configFilePath));
+                System.out.println("Loaded custom config from: " + configFilePath);
+            } catch (IOException e) {
+                System.err.println("Error loading custom config file: " + configFilePath);
+                System.err.println("Falling back to embedded rules.yaml");
+                input = MuleGuardMain.class.getClassLoader().getResourceAsStream("rules/rules.yaml");
+            }
+        } else {
+            input = MuleGuardMain.class.getClassLoader().getResourceAsStream("rules/rules.yaml");
+        }
+
         if (input == null) {
             System.err.println("rules.yaml not found!");
             System.exit(1);
