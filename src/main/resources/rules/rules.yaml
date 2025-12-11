@@ -6,9 +6,57 @@
 # =============================================================================
 
 config:
-  # Regex pattern to identify configuration projects by folder name
-  folderPattern: ".*_config.*"
-
+  # Project Identification Configuration
+  # Defines how to identify different types of projects in the root folder
+  
+  projectIdentification:
+    # Configuration Folder Identification
+    # Config folders are identified by naming pattern (regex)
+    configFolder:
+      # Regex pattern to match config folder names
+      # Default: ".*_config.*" matches any folder containing "_config"
+      # Examples: "muleapp1_config", "api_config_v2", "test_config"
+      namePattern: ".*_config.*"
+      
+      # Alternative patterns (if you want to match multiple patterns, use regex OR: "pattern1|pattern2")
+      # Example: ".*_config.*|.*-config.*" matches both "_config" and "-config"
+    
+    # Mule API Project Identification
+    # Mule code projects are identified by the presence of specific files
+    muleApiProject:
+      # Match mode: how to evaluate marker files
+      # "ANY" = At least ONE marker file must exist (OR logic)
+      # "ALL" = ALL marker files must exist (AND logic)
+      matchMode: "ALL"  # Require BOTH pom.xml AND mule-artifact.json
+      
+      # List of marker files to check
+      # Default: ["pom.xml", "mule-artifact.json"]
+      markerFiles:
+        - "pom.xml"
+        - "mule-artifact.json"
+      
+      # Optional: Additional marker files (uncomment to add more)
+      # - "build.gradle"
+      # - "mule-app.properties"
+    
+    # Folders to Ignore
+    # These folders will be skipped during validation
+    ignoredFolders:
+      # Exact folder names to ignore (case-sensitive)
+      exactNames:
+        - "muleguard-reports"
+        - "target"
+        - "bin"
+        - "build"
+        - ".git"
+        - ".idea"
+        - ".vscode"
+        - "node_modules"
+      
+      # Folder name prefixes to ignore (folders starting with these)
+      prefixes:
+        - "."  # Ignore all hidden folders (starting with dot)
+  
   # Numeric range for rules that should ONLY apply to configuration projects
   rules:
     start: 100
@@ -412,3 +460,79 @@ rules:
               values: ["3.0.0", "3.0.1"]
             - name: "wssencdec.policy.version"
               values: ["3.0.0", "3.0.1"]
+
+  # RULE-107: Forbidden Substring Check for .properties files
+  - id: "RULE-107"
+    name: "Forbidden substring check for .properties files"
+    description: "Fails if forbidden tokens are found in .properties files"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: MANDATORY_SUBSTRING_CHECK
+        params:
+          fileExtensions: [".properties"]
+          caseSensitive: true
+          searchMode: FORBIDDEN  # Fail if token is found; REQUIRED is other option
+          environments: ["ALL"]
+          tokens:
+            - "hardcoded.password"
+            - "TODO"
+            - "fixmelater"
+
+  # RULE-108: Forbidden Substring Check for .policy files
+  - id: "RULE-108"
+    name: "Forbidden substring check for .policy files"
+    description: "Fails if forbidden tokens are found in .policy files"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: MANDATORY_SUBSTRING_CHECK
+        params:
+          fileExtensions: [".policy"]
+          caseSensitive: true
+          searchMode: FORBIDDEN  # Fail if token is found; REQUIRED is other option
+          environments: ["ALL"]
+          tokens:
+            - "deprecated.policy"
+            - "old.version"
+
+
+  # RULE-109: Forbidden regex pattern check in .properties files
+  - id: "RULE-109"
+    name: "Forbidden regex pattern (ip addresses) check in .properties files"
+    description: "Fails if forbidden regex patterns are found in .properties files"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: GENERIC_TOKEN_SEARCH
+        params:
+          filePatterns: ["**/Properties/**/*.properties"]  # Match environment config files
+          environments: ["ALL"]  # Check all environments or specify: ["ITE", "PROD", "DR"]
+          searchMode: FORBIDDEN  # Fail if IP found; use REQUIRED to enforce IPs
+          matchMode: REGEX
+          tokens:
+            # IPv4 pattern: matches xxx.xxx.xxx.xxx format (excluding commented lines)
+            - '^(?![\s]*[#!]).*\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
+            # Localhost variations (excluding commented lines)
+            - '^(?![\s]*[#!]).*\blocalhost\b'
+            - '^(?![\s]*[#!]).*\b127\.0\.0\.1\b'
+
+  # RULE-110: Forbidden regex pattern check in .policy files
+  - id: "RULE-110"
+    name: "Forbidden regex pattern (ip addresses) check in .policy files"
+    description: "Fails if forbidden regex patterns are found in .policy files"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: GENERIC_TOKEN_SEARCH
+        params:
+          filePatterns: ["**/Policies/*.policy", "**/Policies/**/*.policy"]  # Match both direct and nested policy files
+          environments: ["ALL"]  # Check all environments or specify: ["ITE", "PROD", "DR"]
+          searchMode: FORBIDDEN  # Fail if IP found; use REQUIRED to enforce IPs
+          matchMode: REGEX
+          tokens:
+            # IPv4 pattern: matches xxx.xxx.xxx.xxx format (excluding commented lines)
+            - '^(?![\s]*[#!]).*\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b'
+            # Localhost variations (excluding commented lines)
+            - '^(?![\s]*[#!]).*\blocalhost\b'
+            - '^(?![\s]*[#!]).*\b127\.0\.0\.1\b'

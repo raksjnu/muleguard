@@ -58,7 +58,28 @@ public class MuleGuardMain {
 
         RootWrapper configWrapper = loadConfig(configFilePath);
         List<Rule> allRules = configWrapper.getRules();
-        String configFolderPattern = configWrapper.getConfig().getFolderPattern();
+
+        // Load project identification configuration
+        @SuppressWarnings("unchecked")
+        Map<String, Object> projectIdConfig = configWrapper.getConfig().getProjectIdentification();
+
+        // Config folder pattern
+        Map<String, Object> configFolderConfig = (Map<String, Object>) projectIdConfig.get("configFolder");
+        String configFolderPattern = (String) configFolderConfig.get("namePattern");
+
+        // Mule API project marker files
+        Map<String, Object> muleApiConfig = (Map<String, Object>) projectIdConfig.get("muleApiProject");
+        String matchMode = (String) muleApiConfig.getOrDefault("matchMode", "ANY");
+        @SuppressWarnings("unchecked")
+        List<String> markerFiles = (List<String>) muleApiConfig.get("markerFiles");
+
+        // Ignored folders configuration
+        Map<String, Object> ignoredFoldersConfig = (Map<String, Object>) projectIdConfig.get("ignoredFolders");
+        @SuppressWarnings("unchecked")
+        List<String> exactIgnoredNames = (List<String>) ignoredFoldersConfig.get("exactNames");
+        @SuppressWarnings("unchecked")
+        List<String> ignoredPrefixes = (List<String>) ignoredFoldersConfig.get("prefixes");
+
         int configRuleStart = configWrapper.getConfig().getRules().get("start");
         int configRuleEnd = configWrapper.getConfig().getRules().get("end");
         List<String> globalEnvironments = configWrapper.getConfig().getEnvironments();
@@ -78,14 +99,31 @@ public class MuleGuardMain {
                     .filter(dir -> {
                         String name = dir.getFileName().toString();
 
-                        Set<String> EXACT_IGNORED = Set.of("muleguard-reports", "target", "bin", "build");
-
-                        if (EXACT_IGNORED.contains(name) || name.startsWith(".")) {
+                        // Check exact ignored folder names
+                        if (exactIgnoredNames.contains(name)) {
                             return false;
                         }
 
-                        boolean isCodeProject = Files.exists(dir.resolve("pom.xml"))
-                                || Files.exists(dir.resolve("mule-artifact.json"));
+                        // Check ignored prefixes
+                        for (String prefix : ignoredPrefixes) {
+                            if (name.startsWith(prefix)) {
+                                return false;
+                            }
+                        }
+
+                        // Check if it's a Mule API project based on matchMode
+                        boolean isCodeProject;
+                        if ("ALL".equalsIgnoreCase(matchMode)) {
+                            // ALL mode: ALL marker files must exist (AND logic)
+                            isCodeProject = markerFiles.stream()
+                                    .allMatch(markerFile -> Files.exists(dir.resolve(markerFile)));
+                        } else {
+                            // ANY mode (default): At least ONE marker file must exist (OR logic)
+                            isCodeProject = markerFiles.stream()
+                                    .anyMatch(markerFile -> Files.exists(dir.resolve(markerFile)));
+                        }
+
+                        // Check if it's a config project (matches naming pattern)
                         boolean isConfigProject = name.matches(configFolderPattern);
 
                         return isCodeProject || isConfigProject;
@@ -231,16 +269,19 @@ public class MuleGuardMain {
     }
 
     public static class ConfigSection {
-        private String folderPattern;
+        private Map<String, Object> projectIdentification;
         private Map<String, Integer> rules;
         private List<String> environments;
 
-        public String getFolderPattern() {
-            return folderPattern;
+        // Legacy support for old folderPattern (for backward compatibility)
+        private String folderPattern;
+
+        public Map<String, Object> getProjectIdentification() {
+            return projectIdentification;
         }
 
-        public void setFolderPattern(String folderPattern) {
-            this.folderPattern = folderPattern;
+        public void setProjectIdentification(Map<String, Object> projectIdentification) {
+            this.projectIdentification = projectIdentification;
         }
 
         public Map<String, Integer> getRules() {
@@ -257,6 +298,15 @@ public class MuleGuardMain {
 
         public void setEnvironments(List<String> environments) {
             this.environments = environments;
+        }
+
+        // Legacy getter for backward compatibility
+        public String getFolderPattern() {
+            return folderPattern;
+        }
+
+        public void setFolderPattern(String folderPattern) {
+            this.folderPattern = folderPattern;
         }
     }
 

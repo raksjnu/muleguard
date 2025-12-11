@@ -1,0 +1,398 @@
+# =============================================================================
+# MuleGuard Rules Configuration - COMMENTED VERSION FOR EASY CUSTOMIZATION
+# Migration Scope: Mule 4.3.x/4.4.x/4.6.x → 4.9.0 + JDK 17 + Policy Modernization + RTF 4.3
+# Total Checklist: more than 25
+# Author: Rakesh Kumar (rakesh.kumar@ibm.com, raksjnu@gmail.com)
+# =============================================================================
+
+# CONFIGURATION SECTION
+# This controls which rules apply to which folders
+config:
+  # Regex pattern to identify configuration projects by folder name
+  folderPattern: ".*_config.*"  # Folders with "_config" in name get config rules (100-199)
+
+  # Numeric range for rules that should ONLY apply to configuration projects
+  rules:
+    start: 100
+    end: 199
+  
+  # Global list of environments - used by RULE-101 and RULE-102
+  # Add or remove environments as needed for your organization
+  environments:
+    - "SBX"
+    - "ATDV"
+    - "TDV1"
+    - "TDV"
+    - "IBF"
+    - "MNE"
+    - "MNE1"
+    - "MNE2"
+    - "ITE"
+    - "PITE"
+    - "PREP"
+    - "DRL"
+    - "TRN"
+    - "PROD"
+    - "DR"
+
+rules:
+  # =============================================================================
+  # Code Rules (1-99) - Apply to regular Mule API projects
+  # =============================================================================
+  
+  # ✅ RULE-000: Generic token search - HIGHLY REUSABLE!
+  # HOW TO USE: Add as many tokens as you want to scan for.
+  # EXAMPLE: Looking for typos like "seceure:" or forbidden functions
+  # TIP: You can add unlimited tokens - just keep adding to the list!
+  - id: "RULE-000"
+    name: "Generic Code Check"
+    description: "Scans configured files for forbidden tokens. Fails if tokens are found."
+    enabled: true
+    severity: "HIGH"
+    checks:
+      - type: "GENERIC_CODE_TOKEN_CHECK"
+        params:
+          # Add more file patterns here if you want to scan other file types
+          filePatterns:
+            - "src/main/mule/*.xml"
+            - "src/main/resources/*.dwl"
+            # - "src/main/resources/*.yaml"  # Uncomment to add more
+          # Add ALL the tokens you want to check for - no limit!
+          tokens:
+            - "seceure:"  # Example: typo in "secure:"
+            # - "badfunction"  # Add more tokens here
+            # - "deprecated.method"
+            # - "TODO"  # Find all TODOs in code
+
+  # RULE-001: POM parent check - NOT easily reusable (specific to one parent)
+  - id: "RULE-001"
+    name: "Update pom parent: MuleParentPom version:LATEST"
+    description: "Parent pom must be com.raks.eapi:MuleParentPom:LATEST"
+    enabled: true
+    severity: LOW
+    checks:
+      - type: POM_PARENT
+        params:
+          groupId: "com.raks.eapi"
+          artifactId: "MuleParentPom"
+          versionPattern: "LATEST"
+
+  # RULE-002: POM property check - NOT easily reusable (checks one property)
+  - id: "RULE-002"
+    name: "Update pom property: mule.maven.plugin.version to 4.9.0"
+    description: "The property 'mule.maven.plugin.version' should be set to '4.9.0' in pom.xml."
+    enabled: true
+    severity: LOW
+    checks:
+      - type: POM_PROPERTY
+        params:
+          property: "mule.maven.plugin.version"
+          expectedValue: "4.9.0"
+
+  # ✅ RULE-003: Remove plugins - REUSABLE for multiple plugins!
+  # HOW TO USE: Add more plugin identifiers to check for removal
+  # TIP: Each plugin needs groupId:artifactId format
+  - id: "RULE-003"
+    name: "Remove pom plugin: maven-clean-plugin"
+    description: "Ensures that the maven-clean-plugin and maven-surefire-plugin are removed from pom.xml."
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: POM_PLUGIN_REMOVED
+        params:
+          # Add as many plugins as you want to check for removal
+          plugins:
+            - "org.apache.maven.plugins:maven-clean-plugin"
+            - "org.apache.maven.plugins:maven-surefire-plugin"
+            # - "another.group:another-plugin"  # Add more here
+
+  # ✅ RULE-004: Remove dependencies - HIGHLY REUSABLE!
+  # HOW TO USE: Perfect for checking multiple dependencies at once
+  # TIP: Just keep adding groupId:artifactId entries - unlimited!
+  - id: "RULE-004"
+    name: "Remove pom dependency: spring-security-ldap, spring-security-web, mule-module-spring-config, and db2jcc_license_cu"
+    description: "Ensures specific dependencies are removed from pom.xml."
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: POM_DEPENDENCY_REMOVED
+        params:
+          # Add ALL dependencies you want to check for removal
+          dependencies:
+            - "org.springframework.security:spring-security-ldap"
+            - "org.springframework.security:spring-security-web"
+            - "org.mule.modules:mule-module-spring-config"
+            - "com.ibm.db2:db2jcc_license_cu"
+            - "com.mulesoft.mule.core:mule-core-ee"
+            - "com.mulesoft.mule.runtime.modules:mule-module-spring-config-ee"
+            # - "your.group:your-artifact"  # Add more here
+
+  # RULE-005: XML attribute value check - NOT easily reusable (very specific)
+  # This checks ONE specific attribute value with property resolution
+  - id: "RULE-005"
+    name: "Validate IBM MQ Connector Cipher Suite"
+    description: "Ensures that the IBM MQ connector's cipherSuite attribute is set to the approved value."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: IBM_MQ_CIPHER_CHECK
+        params:
+          validationType: ATTRIBUTE_VALUE
+          xpath: "//ibm-mq:connection/@cipherSuite"
+          expectedValue: "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+          propertyResolution: true
+
+  # RULE-006: Add dependency - NOT easily reusable (checks one dependency)
+  - id: "RULE-006"
+    name: "Add pom dependency: apimuleutilities for JCE Encrypt/Decrypt"
+    description: "Ensures that the apimuleutilities dependency is present in pom.xml."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: POM_DEPENDENCY_ADDED
+        params:
+          groupId: "com.raks.eapi"
+          artifactId: "apimuleutilities"
+
+  # RULE-007: Mule artifact JSON validation - NOT easily reusable (specific checks)
+  - id: "RULE-007"
+    name: "Validate mule-artifact.json (Mule 4.9+, Java 17, secureProperties)"
+    description: "Ensures mule-artifact.json meets minimum runtime and security requirements"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: MULE_ARTIFACT_JSON_FULL
+        params:
+          minVersions:
+            minMuleVersion: "4.9.0"
+          requiredStrings:
+            javaSpecificationVersions: "17"
+          requiredElements:
+            - "secureProperties"
+
+  # RULE-008: XPath element existence - NOT easily reusable (checks one element)
+  - id: "RULE-008"
+    name: "Check for api-gateway:autodiscovery"
+    description: "Verifies that the api-gateway:autodiscovery element is present in a Mule configuration file."
+    enabled: true
+    severity: MEDIUM
+    checks:
+      - type: XML_XPATH_EXISTS
+        params:
+          validationType: EXISTS
+          path: "src/main/mule/*.xml"
+          xpath: "//*[local-name()='autodiscovery']"
+          failureMessage: "API Autodiscovery is not enabled. The <api-gateway:autodiscovery> element is missing."
+
+  # ✅ RULE-009: Unsupported expressions - REUSABLE for multiple expressions!
+  # HOW TO USE: Add more unsupported error expressions to the list
+  # TIP: Great for migration checks - add all deprecated expressions
+  - id: "RULE-009"
+    name: "Remove unsupported error handling expressions"
+    description: "Scans for legacy error expressions like error.errorType, error.muleMessage, etc."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: UNSUPPORTED_ERROR_EXPRESSIONS
+        params:
+          # Add more unsupported expressions here
+          unsupportedTokens:
+            - "error.errorType"
+            - "error.muleMessage"
+            - "error.exception"
+            - "error.errors"
+            # - "error.description"  # Add more deprecated expressions
+
+  # ✅ RULE-010: Forbidden XML attributes - REUSABLE!
+  # HOW TO USE: Add more elements and attributes to check
+  # TIP: Perfect for finding deprecated attributes across multiple elements
+  - id: "RULE-010"
+    name: "Remove unsupported from/to ApplicationCode attributes"
+    description: "Scans for fromApplicationCode or toApplicationCode attributes in logging connector elements."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: UNSUPPORTED_XML_ATTRIBUTE
+        params:
+          validationType: FORBIDDEN_ATTRIBUTE
+          path: "src/main/mule/*.xml"
+          # Add more element names here
+          elements:
+            - "request_in"
+            - "request_out"
+            - "response_in"
+            - "response_out"
+            # - "another-element"  # Add more elements
+          # Add more forbidden attributes here
+          attributes:
+            - "fromApplicationCode"
+            - "toApplicationCode"
+            # - "deprecatedAttribute"  # Add more attributes
+
+  # ✅ RULE-011: Token search in specific files - HIGHLY REUSABLE!
+  # HOW TO USE: Add more file patterns and more tokens to search for
+  # TIP: Great for finding any forbidden strings in your configs
+  - id: "RULE-011"
+    name: "Check for DLP references"
+    description: "Scans for specific DLP-related property references in configuration and property files."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: DLP_REFERENCE_CHECK
+        params:
+          # Add more file patterns if needed
+          filePatterns:
+            - "mule/http-proxy.xml"
+            - "resources/*.properties"
+            # - "config/*.yaml"  # Add more file patterns
+          # Add more tokens to search for - just keep adding to the list
+          tokens:
+            - "north.bound.dlp.flag"
+            - "south.bound.dlp.flag"
+            - "wmq.dlp.requestqueue"
+            # - "another.forbidden.property"  # Add more tokens
+          searchMode: FORBIDDEN
+          matchMode: SUBSTRING
+
+  # RULE-012: Forbidden value in XML element - NOT easily reusable (very specific)
+  - id: "RULE-012"
+    name: "Check for legacy JCE PBE encryption algorithm"
+    description: "Scans for the usage of PBEWithHmacSHA256AndAES_256 in crypto:jce-encrypt-pbe elements."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: CRYPTO_JCE_ENCRYPT_PBE_CHECK
+        params:
+          validationType: FORBIDDEN_VALUE
+          path: "src/main/mule/*.xml"
+          elementName: "crypto:jce-encrypt-pbe"
+          forbiddenValue: "PBEWithHmacSHA256AndAES_256"
+
+  # RULE-013: Required attribute check - NOT easily reusable (checks one attribute)
+  - id: "RULE-013"
+    name: "Check for 'type' attribute in crypto:jce-config"
+    description: "Ensures that any crypto:jce-config element has the 'type' attribute defined."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: CRYPTO_JCE_CONFIG_TYPE_CHECK
+        params:
+          validationType: ATTRIBUTE_EXISTS
+          path: "src/main/mule/*.xml"
+          elementName: "crypto:jce-config"
+          requiredAttribute: "type"
+
+  # ✅ RULE-014: Token in XML element - REUSABLE!
+  # HOW TO USE: Can be used to find any tokens within specific XML elements
+  # TIP: Change elementName and tokens to check different scenarios
+  - id: "RULE-014"
+    name: "Check for toBase64 in set-variable"
+    description: "Scans for the use of the 'toBase64' token within a 'set-variable' element."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: FORBIDDEN_TOKEN_IN_ELEMENT
+        params:
+          filePatterns: ["src/main/mule/*.xml"]
+          # Add more tokens to search for within this element
+          tokens: ["toBase64"]
+          elementName: "set-variable"  # Change this to check different elements
+          searchMode: FORBIDDEN
+          matchMode: ELEMENT_ATTRIBUTE
+
+  # =============================================================================
+  # Configuration Rules (100-199)
+  # These rules ONLY run on folders matching the pattern "*_config*"
+  # =============================================================================
+  
+  # ✅ RULE-100: Generic config token check - HIGHLY REUSABLE!
+  # HOW TO USE: Perfect for checking if required config values are present
+  # TIP: Add as many tokens as you need to verify - unlimited!
+  - id: "RULE-100"
+    name: "Generic Config Check"
+    description: "Scans configured files for required tokens in configuration folders"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: GENERIC_CONFIG_TOKEN_CHECK
+        params:
+          # Add more file patterns if you have other config file types
+          filePatterns: 
+            - "src/main/resources/*.yaml"
+            - "src/main/resources/*.properties"
+            # - "config/*.json"  # Add more patterns
+          # Add ALL the tokens you want to check for - no limit!
+          tokens:
+            - "required.config.token"
+            - "another.required.token"
+            # - "your.config.value"  # Add more tokens here
+            # - "mandatory.setting"
+
+  # ✅ RULE-101: Property validation - HIGHLY REUSABLE!
+  # HOW TO USE: Check for as many properties as you want across all environments
+  # TIP: Just add more property names to the list - unlimited!
+  - id: "RULE-101"
+    name: "Config Property Check"
+    description: "Validates that required properties exist in environment-specific .properties files"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: CONFIG_PROPERTY_EXISTS
+        params:
+          # Add more property names here - check for as many as you need!
+          propertyNames:
+            - "LogJsonFormat"
+            - "apiidi"
+            # - "your.property.name"  # Just add more here
+            # - "another.required.property"
+            # - "database.connection.url"
+          fileExtensions: [".properties"]
+          # Uses global environments from config section above
+
+  # ✅ RULE-102: Policy property validation - HIGHLY REUSABLE!
+  # HOW TO USE: Same as RULE-101 but for .policy files
+  # TIP: Add as many policy properties as you need to validate
+  - id: "RULE-102"
+    name: "Config Policy Check"
+    description: "Validates that required properties exist in environment-specific .policy files"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: CONFIG_POLICY_EXISTS
+        params:
+          # Add more policy property names here
+          propertyNames:
+            - "rakspolicyproperty2.policypropname"
+            - "rakspolicyproperty"
+            # - "your.policy.property"  # Add more here
+            # - "security.policy.name"
+          fileExtensions: [".policy"]
+          # Uses global environments from config section above
+
+# =============================================================================
+# QUICK REFERENCE - Which rules can be easily reused?
+# =============================================================================
+# 
+# ✅ HIGHLY REUSABLE (just add more items to lists):
+#   - RULE-000: Generic token search (add unlimited tokens)
+#   - RULE-003: Remove plugins (add more plugins)
+#   - RULE-004: Remove dependencies (add unlimited dependencies)
+#   - RULE-009: Unsupported expressions (add more expressions)
+#   - RULE-010: Forbidden attributes (add more elements/attributes)
+#   - RULE-011: Token search in files (add more files/tokens)
+#   - RULE-014: Token in XML element (change element name and tokens)
+#   - RULE-100: Config token check (add unlimited tokens)
+#   - RULE-101: Property validation (add unlimited properties)
+#   - RULE-102: Policy validation (add unlimited policy properties)
+#
+# ⚠️ NOT EASILY REUSABLE (specific to one check):
+#   - RULE-001: POM parent (checks one specific parent)
+#   - RULE-002: POM property (checks one property)
+#   - RULE-005: IBM MQ cipher (very specific XPath check)
+#   - RULE-006: Add dependency (checks one dependency)
+#   - RULE-007: Mule artifact JSON (specific structure)
+#   - RULE-008: XPath exists (checks one XPath)
+#   - RULE-012: Forbidden value (checks one specific value)
+#   - RULE-013: Required attribute (checks one attribute)
+#
+# =============================================================================

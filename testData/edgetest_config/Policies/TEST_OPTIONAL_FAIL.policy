@@ -1,0 +1,12 @@
+# Optional Policy Property Test File - Should FAIL
+# Tests RULE-106: Optional policy properties with invalid values
+
+# ===== Properties PRESENT with INVALID values (should FAIL) =====
+mTLS-AuthZ.policy.version=2.0.0
+wssencdec.policy.version=1.0.0
+
+# ===== Required properties for context =====
+http.protocols=HTTPS
+http.private.port=8081
+truist.authz.policy.version=3.0.0
+assetType=rest

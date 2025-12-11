@@ -11,10 +11,13 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Mandatory substring check for configuration files.
- * Validates that required tokens exist as exact substrings in specified files.
+ * Substring check for configuration files.
+ * Validates that tokens exist or do not exist as exact substrings in specified
+ * files.
  * 
  * Supports:
+ * - Search modes: REQUIRED (token must exist) or FORBIDDEN (token must NOT
+ * exist)
  * - Configurable case sensitivity
  * - Multiple file extensions (.properties, .policy, etc.)
  * - Environment-specific file filtering
@@ -34,6 +37,9 @@ public class MandatorySubstringCheck extends AbstractCheck {
         // Default to case-sensitive if not specified
         boolean caseSensitive = (Boolean) check.getParams().getOrDefault("caseSensitive", true);
 
+        // Default to REQUIRED mode if not specified
+        String searchMode = (String) check.getParams().getOrDefault("searchMode", "REQUIRED");
+
         // Validation
         if (fileExtensions == null || fileExtensions.isEmpty()) {
             return CheckResult.fail(check.getRuleId(), check.getDescription(),
@@ -50,13 +56,18 @@ public class MandatorySubstringCheck extends AbstractCheck {
                     "Configuration error: 'environments' parameter is required");
         }
 
+        if (!searchMode.equals("REQUIRED") && !searchMode.equals("FORBIDDEN")) {
+            return CheckResult.fail(check.getRuleId(), check.getDescription(),
+                    "Configuration error: 'searchMode' must be either 'REQUIRED' or 'FORBIDDEN'");
+        }
+
         List<String> failures = new ArrayList<>();
 
         try (Stream<Path> paths = Files.walk(projectRoot)) {
             paths.filter(Files::isRegularFile)
                     .filter(path -> matchesEnvironmentFile(path, environments, fileExtensions))
                     .forEach(file -> {
-                        validateTokensInFile(file, tokens, caseSensitive, projectRoot, failures);
+                        validateTokensInFile(file, tokens, caseSensitive, searchMode, projectRoot, failures);
                     });
 
         } catch (IOException e) {
@@ -65,9 +76,12 @@ public class MandatorySubstringCheck extends AbstractCheck {
         }
 
         if (failures.isEmpty()) {
-            return CheckResult.pass(check.getRuleId(), check.getDescription(),
-                    String.format("All required tokens found in environment files (case-sensitive: %s)",
-                            caseSensitive));
+            String message = searchMode.equals("REQUIRED")
+                    ? String.format("All required tokens found in environment files (case-sensitive: %s)",
+                            caseSensitive)
+                    : String.format("No forbidden tokens found in environment files (case-sensitive: %s)",
+                            caseSensitive);
+            return CheckResult.pass(check.getRuleId(), check.getDescription(), message);
         } else {
             return CheckResult.fail(check.getRuleId(), check.getDescription(),
                     "Validation failures:\n• " + String.join("\n• ", failures));
@@ -86,20 +100,49 @@ public class MandatorySubstringCheck extends AbstractCheck {
     }
 
     /**
-     * Validate that all required tokens exist in the file
+     * Validate tokens in file based on search mode
+     * REQUIRED mode: Token must exist (fail if not found)
+     * FORBIDDEN mode: Token must NOT exist (fail if found)
      */
     private void validateTokensInFile(Path file, List<String> tokens, boolean caseSensitive,
-            Path projectRoot, List<String> failures) {
+            String searchMode, Path projectRoot, List<String> failures) {
         try {
             String content = Files.readString(file);
+            String[] lines = content.split("\\r?\\n");
 
             for (String token : tokens) {
-                boolean found = containsToken(content, token, caseSensitive);
+                boolean found = false;
 
-                if (!found) {
-                    failures.add(String.format(
-                            "Token '%s' not found in file: %s (case-sensitive: %s)",
-                            token, projectRoot.relativize(file), caseSensitive));
+                // Check each line, skipping comments
+                for (String line : lines) {
+                    line = line.trim();
+
+                    // Skip comments and empty lines
+                    if (line.isEmpty() || line.startsWith("#") || line.startsWith("!")) {
+                        continue;
+                    }
+
+                    // Check if token exists in this non-commented line
+                    if (containsToken(line, token, caseSensitive)) {
+                        found = true;
+                        break;
+                    }
+                }
+
+                if (searchMode.equals("REQUIRED")) {
+                    // REQUIRED mode: Fail if token is NOT found
+                    if (!found) {
+                        failures.add(String.format(
+                                "Required token '%s' not found in file: %s (case-sensitive: %s)",
+                                token, projectRoot.relativize(file), caseSensitive));
+                    }
+                } else if (searchMode.equals("FORBIDDEN")) {
+                    // FORBIDDEN mode: Fail if token IS found
+                    if (found) {
+                        failures.add(String.format(
+                                "Forbidden token '%s' found in file: %s (case-sensitive: %s)",
+                                token, projectRoot.relativize(file), caseSensitive));
+                    }
                 }
             }
         } catch (IOException e) {

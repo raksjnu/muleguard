@@ -1,0 +1,41 @@
+# Edge Case Test File for RULE-102, RULE-103, RULE-108, RULE-110
+# Tests: Mandatory substring, mandatory name-value, forbidden substring, IP detection
+
+# ===== RULE-102: Mandatory Substring Check =====
+# Should PASS: Contains required substrings
+http.protocols=HTTPS
+http.private.port=8081
+
+# ===== RULE-103: Mandatory Name-Value Check =====
+# Should PASS: All required policy properties with correct values
+truist.authz.policy.version=3.0.0
+assetType=rest
+
+# ===== RULE-108: Forbidden Substring Check =====
+# Should PASS: No forbidden tokens
+# Commented forbidden tokens should be ignored
+#deprecated.policy=old
+#old.version=1.0
+
+# ===== RULE-110: IP Address Detection =====
+# Should PASS: No IP addresses (all commented or using hostnames)
+#backend.server=192.168.1.100
+#cache.host=10.0.0.50
+api.gateway=gateway.internal.company.com
+service.endpoint=https://api.example.com
+
+# ===== Edge Cases =====
+# Whitespace handling
+  truist.authz.policy.version  =  3.0.0  
+    assetType   =   soap   
+
+# Empty values (optional properties)
+mTLS-AuthZ.policy.version=
+
+# Comment variations
+! This is a comment with exclamation
+# This is a comment with hash
+  # Indented comment
+
+# Case sensitivity test (should match case-insensitively for values)
+assetType=REST

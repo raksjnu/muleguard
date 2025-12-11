@@ -46,6 +46,13 @@ public class GenericTokenSearchCheck extends AbstractCheck {
         @SuppressWarnings("unchecked")
         List<String> tokens = (List<String>) check.getParams().get("tokens");
 
+        // Optional: environment filtering (for config files)
+        List<String> environments = null;
+        Object envsParam = check.getParams().get("environments");
+        if (envsParam != null) {
+            environments = resolveEnvironments(check);
+        }
+
         // Default to FORBIDDEN mode if not specified
         String searchMode = (String) check.getParams().getOrDefault("searchMode", "FORBIDDEN");
 
@@ -71,17 +78,37 @@ public class GenericTokenSearchCheck extends AbstractCheck {
                     "Project directory not found: " + projectRoot);
         }
 
-        // Create file filter based on patterns
+        // Create file filter based on patterns and optional environment filtering
+        final List<String> finalEnvironments = environments;
         IOFileFilter fileFilter = new IOFileFilter() {
             @Override
             public boolean accept(File file) {
                 String normalizedPath = FilenameUtils.separatorsToUnix(file.getAbsolutePath());
+
+                // Check file pattern match
+                boolean patternMatches = false;
                 for (String pattern : filePatterns) {
                     if (FilenameUtils.wildcardMatch(normalizedPath, "**/" + pattern)) {
-                        return true;
+                        patternMatches = true;
+                        break;
                     }
                 }
-                return false;
+
+                if (!patternMatches) {
+                    return false;
+                }
+
+                // If environments are specified, check if file matches environment
+                if (finalEnvironments != null && !finalEnvironments.isEmpty()) {
+                    String fileName = file.getName();
+                    String fileBaseName = fileName.contains(".")
+                            ? fileName.substring(0, fileName.lastIndexOf('.'))
+                            : fileName;
+
+                    return finalEnvironments.contains(fileBaseName);
+                }
+
+                return true;
             }
 
             @Override
@@ -174,7 +201,7 @@ public class GenericTokenSearchCheck extends AbstractCheck {
      */
     private boolean matchesRegex(String content, String regexPattern) {
         try {
-            Pattern pattern = Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE);
+            Pattern pattern = Pattern.compile(regexPattern, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
             Matcher matcher = pattern.matcher(content);
             return matcher.find();
         } catch (Exception e) {

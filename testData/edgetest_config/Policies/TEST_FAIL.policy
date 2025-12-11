@@ -1,0 +1,40 @@
+# Edge Case Test File - Should FAIL multiple rules
+# Tests: Missing required properties, forbidden tokens, IP addresses
+
+# ===== RULE-102: Mandatory Substring Check =====
+# Should FAIL: Missing required substrings
+# (http.protocols and http.private.port are commented)
+#http.protocols=HTTPS
+#http.private.port=8081
+
+# ===== RULE-103: Mandatory Name-Value Check =====
+# Should FAIL: truist.authz.policy.version has invalid value
+truist.authz.policy.version=2.0.0
+
+# Should FAIL: assetType has invalid value
+assetType=invalid_type
+
+# ===== RULE-108: Forbidden Substring Check =====
+# Should FAIL: Contains forbidden tokens
+deprecated.policy=should-not-be-here
+old.version=1.0.0
+
+# ===== RULE-110: IP Address Detection =====
+# Should FAIL: Contains IP addresses
+backend.server=192.168.1.100
+cache.host=10.0.0.50
+api.gateway=localhost
+service.endpoint=https://172.16.0.1/api
+loopback.test=127.0.0.1
+
+# Edge cases for IP detection
+ipv4.test=255.255.255.0
+private.ip=10.10.10.10
+
+# Commented IPs should be ignored (PASS)
+#old.backend=192.168.1.200
+#  test.server=10.0.0.100
+
+# Case sensitivity edge cases
+HTTP.PROTOCOLS=HTTPS
+HTTP.PRIVATE.PORT=8081

@@ -1,0 +1,24 @@
+# Optional Policy Property Test File - Should PASS
+# Tests RULE-106: Optional policy properties
+
+# ===== Properties that are ABSENT (should PASS) =====
+# mTLS-AuthZ.policy.version - not present
+# wssencdec.policy.version - not present
+
+# ===== Properties that are PRESENT with CORRECT values (should PASS) =====
+mTLS-AuthZ.policy.version=3.0.0
+wssencdec.policy.version=3.0.1
+
+# ===== Required properties for context =====
+http.protocols=HTTPS
+http.private.port=8081
+truist.authz.policy.version=3.0.0
+assetType=rest
+
+# ===== Edge Cases =====
+# Commented optional properties (should PASS - treated as absent)
+#mTLS-AuthZ.policy.version=invalid
+#wssencdec.policy.version=1.0.0
+
+# Whitespace handling
+  mTLS-AuthZ.policy.version  =  3.0.0  
