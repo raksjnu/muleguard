@@ -23,6 +23,16 @@ public class CheckFactory {
         // properties)
         registry.put("GENERIC_POM_VALIDATION", GenericPomValidationCheck.class);
 
+        // === NEW CONFIGURATION CHECKS ===
+        // Mandatory substring check for config files
+        registry.put("MANDATORY_SUBSTRING_CHECK", MandatorySubstringCheck.class);
+
+        // Mandatory property name-value check
+        registry.put("MANDATORY_PROPERTY_VALUE_CHECK", MandatoryPropertyValueCheck.class);
+
+        // Optional property name-value check
+        registry.put("OPTIONAL_PROPERTY_VALUE_CHECK", OptionalPropertyValueCheck.class);
+
         // === LEGACY MAPPINGS (For backward compatibility) ===
         // Token search mappings
         registry.put("GENERIC_CODE_TOKEN_CHECK", GenericTokenSearchCheck.class);

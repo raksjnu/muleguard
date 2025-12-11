@@ -98,7 +98,22 @@ public class MuleGuardMain {
                                             if (check.getParams() == null) {
                                                 check.setParams(new java.util.HashMap<>());
                                             }
-                                            check.getParams().putIfAbsent("environments", globalEnvironments);
+
+                                            // Check if environments parameter exists and contains "ALL"
+                                            @SuppressWarnings("unchecked")
+                                            List<String> envs = (List<String>) check.getParams().get("environments");
+
+                                            if (envs != null && envs.size() == 1
+                                                    && "ALL".equalsIgnoreCase(envs.get(0))) {
+                                                // Replace "ALL" with global environment list
+                                                check.getParams().put("environments",
+                                                        new ArrayList<>(globalEnvironments));
+                                            } else if (envs == null || envs.isEmpty()) {
+                                                // If no environments specified, use global list
+                                                check.getParams().put("environments",
+                                                        new ArrayList<>(globalEnvironments));
+                                            }
+                                            // Otherwise, keep the specific environments list as-is
                                         });
                                     }
 

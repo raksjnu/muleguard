@@ -8,6 +8,7 @@ com\raks\muleguard\gui\MuleGuardGUI$ReportHandler.class
 com\raks\muleguard\engine\RuleExecutor.class
 com\raks\muleguard\model\ValidationReport$RuleResult.class
 com\raks\muleguard\checks\GenericPomValidationCheck.class
+com\raks\muleguard\checks\MandatorySubstringCheck.class
 com\raks\muleguard\MuleGuardMain$ConfigSection.class
 com\raks\muleguard\PropertyResolver.class
 com\raks\muleguard\checks\ClientIDMapCheck.class
@@ -15,7 +16,10 @@ com\raks\muleguard\checks\GenericTokenSearchCheck$1.class
 com\raks\muleguard\MuleGuardMain$ApiResult.class
 com\raks\muleguard\gui\MuleGuardGUI$ValidationHandler.class
 com\raks\muleguard\checks\RULE_002_PluginVersionCheck.class
+com\raks\muleguard\checks\MandatoryPropertyValueCheck.class
+com\raks\muleguard\model\PropertyConfig.class
 com\raks\muleguard\engine\ReportGenerator.class
+com\raks\muleguard\checks\OptionalPropertyValueCheck.class
 com\raks\muleguard\checks\RULE_001_PomParentCheck.class
 com\raks\muleguard\model\Check.class
 com\raks\muleguard\model\CheckResult.class

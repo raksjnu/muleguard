@@ -255,84 +255,105 @@ rules:
   # =============================================================================
   # Configuration Rules (100-199)
   # =============================================================================
+  
+  # RULE-100: Mandatory Substring Check for .properties files
   - id: "RULE-100"
-    name: "Generic Config Check"
-    description: "Scans configured files for configured tokens. Fails if tokens are not found."
+    name: "Mandatory substring check for .properties files"
+    description: "Scans .properties files for required tokens (exact substring match)"
     enabled: true
-    severity: "HIGH"
+    severity: HIGH
     checks:
-      - type: "SUBSTRING_TOKEN_CHECK"
+      - type: MANDATORY_SUBSTRING_CHECK
         params:
-          filePatterns:
-            #- "**/Properties/**/*.properties"
-            - ".properties"
+          fileExtensions: [".properties"]
+          caseSensitive: true  # Exact case-sensitive substring match
+          environments: ["ALL"]  # Check all environments
           tokens:
-            - "apiidi"
+            - "apiId"
+  
+  # RULE-101: Mandatory Name-Value Check for .properties files
   - id: "RULE-101"
-    name: "Check for environment config property"
-    description: "Ensures that all environment property files contain the required config property."
+    name: "Mandatory name-value check for .properties files"
+    description: "Ensures required properties exist with correct values in .properties files"
     enabled: true
     severity: HIGH
     checks:
-      - type: CONFIG_PROPERTY_EXISTS
+      - type: MANDATORY_PROPERTY_VALUE_CHECK
         params:
-          propertyNames:
-            - "LogJsonFormat"
-            - "anotherpropertycheck"
-            # We can add more properties to check here, for example:
-            # - "another.required.property"
-          fileExtensions: 
-            - ".properties"
+          fileExtensions: [".properties"]
+          delimiter: "="
+          caseSensitiveNames: true   # Property names are case-sensitive
+          caseSensitiveValues: true  # Property values are case-sensitive
+          environments: ["ALL"]  # Check all environments
+          properties:
+            - name: "LogJsonFormat"
+              values: ["true", "false"]
+            - name: "anotherpropertycheck"
+              values: ["somevalue"]
 
+  # RULE-102: Mandatory Substring Check for .policy files
   - id: "RULE-102"
-    name: "Check for required policy properties"
-    description: "Ensures that all environment policy files contain the required policy properties."
+    name: "Mandatory substring check for .policy files"
+    description: "Scans .policy files for required tokens (exact substring match)"
     enabled: true
     severity: HIGH
     checks:
-      - type: CONFIG_POLICY_EXISTS
+      - type: MANDATORY_SUBSTRING_CHECK
         params:
-          propertyNames:
-            - "rakspolicyproperty"
-            - "rakspolicyproperty2.policypropname"
-          fileExtensions: 
-            - ".policy"
-          parseMode: "SUBSTRING_SEARCH"
+          fileExtensions: [".policy"]
+          caseSensitive: true
+          environments: ["ALL"]  # Check all environments
+          tokens:
+            - "http.protocols=HTTPS"
+            - "http.private.port=8081"
 
-  # Regex Pattern Validation for Policy Files
+  # RULE-103: Mandatory Name-Value Check for .policy files
   - id: "RULE-103"
-    name: "Validate policy files for correct policy details"
-    description: "Validates that .policy files contain required policy properties with correct versions."
+    name: "Mandatory name-value check for .policy files"
+    description: "Ensures required policy properties exist with correct values"
     enabled: true
     severity: HIGH
     checks:
-      - type: GENERIC_PROPERTY_FILE
-        description: "Check for required policy properties and versions"
+      - type: MANDATORY_PROPERTY_VALUE_CHECK
         params:
-          parseMode: "REGEX_PATTERN"
-          fileExtensions:
-            - ".policy"
-          regexPatterns:
+          fileExtensions: [".policy"]
+          delimiter: "="
+          caseSensitiveNames: true
+          caseSensitiveValues: true
+          environments: ["ALL"]  # Check all environments
+          properties:
             # Header Injection Policy
-            - "headerinjection.policy.applied=true"
-            - "headerinjection.policy.version=1.3.2"
+            - name: "headerinjection.policy.applied"
+              values: ["true"]
+            - name: "headerinjection.policy.version"
+              values: ["1.3.2", "1.3.3"]  # Allow multiple versions
             
             # Rate Limit Policy
-            - "ratelimit.policy.applied=true"
-            - "ratelimit.policy.version=1.4.2"
+            - name: "ratelimit.policy.applied"
+              values: ["true"]
+            - name: "ratelimit.policy.version"
+              values: ["1.4.2"]
             
             # Composite Authentication Policy
-            - "truist.compositeauthn.policy.applied=true"
-            - "truist.compositeauthn.policy.version=3.0.0"
+            - name: "truist.compositeauthn.policy.applied"
+              values: ["true"]
+            - name: "truist.compositeauthn.policy.version"
+              values: ["3.0.0"]
             
             # Authorization Policy
-            - "truist.authz.policy.applied=true"
-            - "truist.authz.policy.version=3.0.0"
+            - name: "truist.authz.policy.applied"
+              values: ["true"]
+            - name: "truist.authz.policy.version"
+              values: ["3.0.0"]
 
-  # Custom Validator for Properties Files (Regex patterns in Java code ; this is the only rule where regex is implemented in java code instead of yaml config file regex as logic was failing multiple times.)
+            # Asset Type
+            - name: "assetType"
+              values: ["rest","soap","batch"]
+
+  # RULE-104: Custom Validator for Properties Files
   - id: "RULE-104"
     name: "Validate properties files for correct property details"
-    description: "Validates that .properties files contain required configuration properties using custom validators."
+    description: "Validates that .properties files contain required configuration properties using custom validators"
     enabled: true
     severity: MEDIUM
     checks:
@@ -341,13 +362,53 @@ rules:
         description: "Validate secure encrypted properties"
         params:
           validationType: "SECURE"
-          fileExtensions:
-            - ".properties"
+          fileExtensions: [".properties"]
+          environments: ["ALL"]  # Support environment selection
       
       # Client ID mapping validation - using custom validator with strict format checking
       - type: CLIENTIDMAP_VALIDATOR
         description: "Validate authorization policy client ID mappings"
         params:
           validationType: "CLIENTIDMAP"
-          fileExtensions:
-            - ".policy"
+          fileExtensions: [".policy"]
+          environments: ["ALL"]  # Support environment selection
+
+  # RULE-105: Optional Name-Value Check for .properties files
+  - id: "RULE-105"
+    name: "Optional name-value check for .properties files"
+    description: "If property exists in .properties files, validates its value"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: OPTIONAL_PROPERTY_VALUE_CHECK
+        params:
+          fileExtensions: [".properties"]
+          delimiter: "="
+          caseSensitiveNames: true
+          caseSensitiveValues: false  # Example: case-insensitive values
+          environments: ["ALL"]
+          properties:
+            - name: "platform.config.analytics.enabled"
+              values: ["true", "false"]
+            - name: "requestPathEncryption"
+              values: ["Y", "N"]
+
+  # RULE-106: Optional Name-Value Check for .policy files
+  - id: "RULE-106"
+    name: "Optional name-value check for .policy files"
+    description: "If property exists in .policy files, validates its value"
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: OPTIONAL_PROPERTY_VALUE_CHECK
+        params:
+          fileExtensions: [".policy"]
+          delimiter: "="
+          caseSensitiveNames: true
+          caseSensitiveValues: true
+          environments: ["ALL"]
+          properties:
+            - name: "mTLS-AuthZ.policy.version"
+              values: ["3.0.0", "3.0.1"]
+            - name: "wssencdec.policy.version"
+              values: ["3.0.0", "3.0.1"]
