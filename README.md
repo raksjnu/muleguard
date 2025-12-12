@@ -44,7 +44,7 @@ To build and run MuleGuard, you will need the following installed:
     mvn clean package
     ```
 
-    The resulting JAR file will be named `muleguard-1.0.0-jar-with-dependencies.jar`.
+    The resulting JAR file will be named `muleguard-1.0.0-jar-with-raks.jar`.
 
 ## How to Use
 
@@ -58,9 +58,9 @@ Use the following command to scan a single MuleSoft API project. You need to pro
 
 ```sh
 # Usage: java -jar <jar-file> <path-to-mule-project> <output-directory>
-java -jar target/muleguard-1.0.0-jar-with-dependencies.jar -p /path/to/your/mule-api
+java -jar target/muleguard-1.0.0-jar-with-raks.jar -p /path/to/your/mule-api
 ```
-example: java -jar .\target\muleguard-1.0.0-jar-with-dependencies.jar -p C:\Users\raksj\Documents\IBM\tmp\t2mtemp\MigrationOutput\Tibco2MuleCode
+example: java -jar .\target\muleguard-1.0.0-jar-with-raks.jar -p C:\Users\raksj\Documents\raks\tmp\t2mtemp\MigrationOutput\Tibco2MuleCode
 
 This will generate an individual report for the API in `report.html` and `report.xlsx` inside the specified output directory.
 
@@ -70,9 +70,9 @@ To scan multiple projects at once, provide the path to a directory that contains
 
 ```sh
 # Usage: java -jar <jar-file> <path-to-directory-of-mule-projects> <output-directory>
-java -jar target/muleguard-1.0.0-jar-with-dependencies.jar -p /path/to/your/apis 
+java -jar target/muleguard-1.0.0-jar-with-raks.jar -p /path/to/your/apis 
 ```
-example: java -jar .\target\muleguard-1.0.0-jar-with-dependencies.jar -p C:\Users\raksj\Documents\IBM\tmp\t2mtemp\MigrationOutput\Tibco2MuleCode
+example: java -jar .\target\muleguard-1.0.0-jar-with-raks.jar -p C:\Users\raksj\Documents\raks\tmp\t2mtemp\MigrationOutput\Tibco2MuleCode
 
 This will generate:
 1.  **A Consolidated Report**: `CONSOLIDATED-REPORT.html` and `CONSOLIDATED-REPORT.xlsx` in the root of the output directory. This report provides a summary of all scanned APIs.
