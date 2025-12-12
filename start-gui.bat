@@ -9,7 +9,7 @@ echo ============================================================
 echo.
 
 REM Check if JAR exists
-if not exist "target\muleguard-1.0.0-jar-with-dependencies.jar" (
+if not exist "target\muleguard-1.0.0-jar-with-raks.jar" (
     echo ERROR: JAR file not found!
     echo Please run: mvn clean package
     echo.
@@ -25,7 +25,7 @@ echo.
 echo Press Ctrl+C to stop the server
 echo.
 
-java -cp target\muleguard-1.0.0-jar-with-dependencies.jar com.raks.muleguard.gui.MuleGuardGUI %MULEGUARD_PORT%
+java -cp target\muleguard-1.0.0-jar-with-raks.jar com.raks.muleguard.gui.MuleGuardGUI %MULEGUARD_PORT%
 
 REM Keep window open if there was an error
 if errorlevel 1 (

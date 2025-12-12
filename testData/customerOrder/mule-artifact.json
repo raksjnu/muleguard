@@ -1,7 +1,0 @@
-{   "minMuleVersion": "4.9.5",
-"secureProperties" : [
-"secure::log.path"
-],
-"javaSpecificationVersions" : "17"
-
-}

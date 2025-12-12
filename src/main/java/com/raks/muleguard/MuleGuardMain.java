@@ -17,7 +17,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.swing.JFileChooser;
@@ -60,20 +59,22 @@ public class MuleGuardMain {
         List<Rule> allRules = configWrapper.getRules();
 
         // Load project identification configuration
-        @SuppressWarnings("unchecked")
         Map<String, Object> projectIdConfig = configWrapper.getConfig().getProjectIdentification();
 
         // Config folder pattern
+        @SuppressWarnings("unchecked")
         Map<String, Object> configFolderConfig = (Map<String, Object>) projectIdConfig.get("configFolder");
         String configFolderPattern = (String) configFolderConfig.get("namePattern");
 
         // Mule API project marker files
+        @SuppressWarnings("unchecked")
         Map<String, Object> muleApiConfig = (Map<String, Object>) projectIdConfig.get("muleApiProject");
         String matchMode = (String) muleApiConfig.getOrDefault("matchMode", "ANY");
         @SuppressWarnings("unchecked")
         List<String> markerFiles = (List<String>) muleApiConfig.get("markerFiles");
 
         // Ignored folders configuration
+        @SuppressWarnings("unchecked")
         Map<String, Object> ignoredFoldersConfig = (Map<String, Object>) projectIdConfig.get("ignoredFolders");
         @SuppressWarnings("unchecked")
         List<String> exactIgnoredNames = (List<String>) ignoredFoldersConfig.get("exactNames");
@@ -179,8 +180,7 @@ public class MuleGuardMain {
                             return;
                         }
 
-                        ReportGenerator.generateHtml(report, apiReportDir.resolve("report.html"));
-                        ReportGenerator.generateExcel(report, apiReportDir.resolve("report.xlsx"));
+                        ReportGenerator.generateIndividualReports(report, apiReportDir);
 
                         int passed = report.passed.size();
                         int failed = report.failed.size();
@@ -211,9 +211,8 @@ public class MuleGuardMain {
         System.out.println("Consolidated report: " + reportsRoot.resolve("CONSOLIDATED-REPORT.html"));
         System.out.println("Individual reports in: " + reportsRoot);
 
-        int totalFailed = results.stream().mapToInt(r -> r.failed).sum();
-        // System.exit(totalFailed > 0 ? 1 : 0); // Commented out to allow GUI to
-        // continue running
+        // System.exit(results.stream().mapToInt(r -> r.failed).sum() > 0 ? 1 : 0); //
+        // Commented out to allow GUI to continue running
     }
 
     private static RootWrapper loadConfig(String configFilePath) {

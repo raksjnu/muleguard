@@ -29,6 +29,7 @@ public class MandatorySubstringCheck extends AbstractCheck {
 
     @Override
     public CheckResult execute(Path projectRoot, Check check) {
+        @SuppressWarnings("unchecked")
         List<String> fileExtensions = (List<String>) check.getParams().get("fileExtensions");
         @SuppressWarnings("unchecked")
         List<String> tokens = (List<String>) check.getParams().get("tokens");

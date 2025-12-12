@@ -9,7 +9,7 @@ echo "╚═══════════════════════�
 echo ""
 
 # Check if JAR exists
-if [ ! -f "target/muleguard-1.0.0-jar-with-dependencies.jar" ]; then
+if [ ! -f "target/muleguard-1.0.0-jar-with-raks.jar" ]; then
     echo "ERROR: JAR file not found!"
     echo "Please run: mvn clean package"
     echo ""
@@ -27,7 +27,7 @@ echo ""
 echo "Press Ctrl+C to stop the server"
 echo ""
 
-java -cp target/muleguard-1.0.0-jar-with-dependencies.jar com.raks.muleguard.gui.MuleGuardGUI $MULEGUARD_PORT
+java -cp target/muleguard-1.0.0-jar-with-raks.jar com.raks.muleguard.gui.MuleGuardGUI $MULEGUARD_PORT
 
 # Check exit status
 if [ $? -ne 0 ]; then

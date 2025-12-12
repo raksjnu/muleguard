@@ -1,5 +1,6 @@
 # MuleGuard - MuleSoft Static Analysis Tool
-# By - Rakesh Kumar ; RAKSJNU@GMAIL.COM
+# raks
+# By - Rakesh Kumar
 
 MuleGuard is a static analysis tool for MuleSoft applications. It validates Mule projects against a defined set of rules to enforce coding standards, security best practices, and migration readiness.
 
@@ -78,11 +79,68 @@ This will generate:
 2.  **Individual Reports**: A sub-directory for each API, containing its specific `report.html` and `report.xlsx`.
 3.  **Checklist**: A `checklist.html` file listing all rules.
 
-### Report Output
 
-After running the tool, the output directory will look something like this:
+## Rule Types Documentation
+
+MuleGuard supports 18 different rule types for comprehensive validation:
+
+### Code Rules (12 types)
+
+Validate Mule application code files (XML, JSON, POM, DataWeave):
+
+| Rule Type | Description | Documentation |
+|-----------|-------------|---------------|
+| `GENERIC_TOKEN_SEARCH_REQUIRED` | Ensure required tokens exist in files | [📖 Docs](docs/GENERIC_TOKEN_SEARCH_REQUIRED.md) |
+| `GENERIC_TOKEN_SEARCH_FORBIDDEN` | Prevent forbidden tokens in files | [📖 Docs](docs/GENERIC_TOKEN_SEARCH_FORBIDDEN.md) |
+| `XML_XPATH_EXISTS` | Validate required XPath expressions match | [📖 Docs](docs/XML_XPATH_EXISTS.md) |
+| `XML_XPATH_NOT_EXISTS` | Ensure forbidden XPath expressions don't match | [📖 Docs](docs/XML_XPATH_NOT_EXISTS.md) |
+| `XML_ATTRIBUTE_EXISTS` | Validate required XML attributes | [📖 Docs](docs/XML_ATTRIBUTE_EXISTS.md) |
+| `XML_ATTRIBUTE_NOT_EXISTS` | Prevent forbidden XML attributes | [📖 Docs](docs/XML_ATTRIBUTE_NOT_EXISTS.md) |
+| `XML_ELEMENT_CONTENT_REQUIRED` | Ensure XML elements contain required content | [📖 Docs](docs/XML_ELEMENT_CONTENT_REQUIRED.md) |
+| `XML_ELEMENT_CONTENT_FORBIDDEN` | Prevent forbidden content in XML elements | [📖 Docs](docs/XML_ELEMENT_CONTENT_FORBIDDEN.md) |
+| `POM_VALIDATION_REQUIRED` | Validate required Maven POM elements | [📖 Docs](docs/POM_VALIDATION_REQUIRED.md) |
+| `POM_VALIDATION_FORBIDDEN` | Prevent forbidden Maven POM elements | [📖 Docs](docs/POM_VALIDATION_FORBIDDEN.md) |
+| `JSON_VALIDATION_REQUIRED` | Ensure required JSON elements exist | [📖 Docs](docs/JSON_VALIDATION_REQUIRED.md) |
+| `JSON_VALIDATION_FORBIDDEN` | Prevent forbidden JSON elements | [📖 Docs](docs/JSON_VALIDATION_FORBIDDEN.md) |
+
+### Config Rules (6 types)
+
+Validate environment-specific configuration files:
+
+| Rule Type | Description | Documentation |
+|-----------|-------------|---------------|
+| `MANDATORY_SUBSTRING_CHECK` | Required/forbidden tokens in environment files | [📖 Docs](docs/MANDATORY_SUBSTRING_CHECK.md) |
+| `MANDATORY_PROPERTY_VALUE_CHECK` | Validate required property name-value pairs | [📖 Docs](docs/MANDATORY_PROPERTY_VALUE_CHECK.md) |
+| `OPTIONAL_PROPERTY_VALUE_CHECK` | Validate optional property values when present | [📖 Docs](docs/OPTIONAL_PROPERTY_VALUE_CHECK.md) |
+| `GENERIC_TOKEN_SEARCH` | Advanced token search with environment filtering | [📖 Docs](docs/GENERIC_TOKEN_SEARCH.md) |
+| `CLIENTIDMAP_VALIDATOR` | Validate client ID mappings and secure properties | [📖 Docs](docs/CLIENTIDMAP_VALIDATOR.md) |
+| `GENERIC_PROPERTY_FILE_CHECK` | Generic property file validation | [📖 Docs](docs/GENERIC_PROPERTY_FILE_CHECK.md) |
+
+### Configuration Guide
+
+All rules are configured in `src/main/resources/rules/rules.yaml`. Each rule type documentation includes:
+- **Parameter reference** - All required and optional parameters
+- **Configuration examples** - Real-world usage scenarios
+- **Error message format** - What to expect when validation fails
+- **Related rule types** - Alternative or complementary rules
+
+## Report Output
+
+After running the tool, the output directory will contain:
 
 ```
+muleguard-reports/
+├── CONSOLIDATED-REPORT.html      # Dashboard for all APIs
+├── CONSOLIDATED-REPORT.xlsx      # Excel summary
+├── checklist.html                # All validation rules reference
+├── api-name-1/
+│   ├── report.html              # Individual API report
+│   └── report.xlsx              # Individual API Excel
+└── api-name-2/
+    ├── report.html
+    └── report.xlsx
+```
+
 
 ## License & Attribution
 

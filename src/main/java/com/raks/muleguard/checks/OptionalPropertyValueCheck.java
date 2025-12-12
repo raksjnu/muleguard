@@ -31,6 +31,7 @@ public class OptionalPropertyValueCheck extends AbstractCheck {
 
     @Override
     public CheckResult execute(Path projectRoot, Check check) {
+        @SuppressWarnings("unchecked")
         List<String> fileExtensions = (List<String>) check.getParams().get("fileExtensions");
         List<String> environments = resolveEnvironments(check);
         @SuppressWarnings("unchecked")

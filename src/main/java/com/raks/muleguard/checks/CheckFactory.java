@@ -33,6 +33,31 @@ public class CheckFactory {
         // Optional property name-value check
         registry.put("OPTIONAL_PROPERTY_VALUE_CHECK", OptionalPropertyValueCheck.class);
 
+        // === NEW STANDARD CODE RULES ===
+        // XML XPath validation (positive and negative)
+        registry.put("XML_XPATH_EXISTS", XmlXPathExistsCheck.class);
+        registry.put("XML_XPATH_NOT_EXISTS", XmlXPathNotExistsCheck.class);
+
+        // XML Attribute validation (positive and negative)
+        registry.put("XML_ATTRIBUTE_EXISTS", XmlAttributeExistsCheck.class);
+        registry.put("XML_ATTRIBUTE_NOT_EXISTS", XmlAttributeNotExistsCheck.class);
+
+        // XML Element Content validation (positive and negative)
+        registry.put("XML_ELEMENT_CONTENT_REQUIRED", XmlElementContentRequiredCheck.class);
+        registry.put("XML_ELEMENT_CONTENT_FORBIDDEN", XmlElementContentForbiddenCheck.class);
+
+        // Generic Token Search (positive and negative)
+        registry.put("GENERIC_TOKEN_SEARCH_REQUIRED", GenericTokenSearchRequiredCheck.class);
+        registry.put("GENERIC_TOKEN_SEARCH_FORBIDDEN", GenericTokenSearchForbiddenCheck.class);
+
+        // POM Validation (positive and negative)
+        registry.put("POM_VALIDATION_REQUIRED", PomValidationRequiredCheck.class);
+        registry.put("POM_VALIDATION_FORBIDDEN", PomValidationForbiddenCheck.class);
+
+        // JSON Validation (positive and negative)
+        registry.put("JSON_VALIDATION_REQUIRED", JsonValidationRequiredCheck.class);
+        registry.put("JSON_VALIDATION_FORBIDDEN", JsonValidationForbiddenCheck.class);
+
         // === LEGACY MAPPINGS (For backward compatibility) ===
         // Token search mappings
         registry.put("GENERIC_CODE_TOKEN_CHECK", GenericTokenSearchCheck.class);
@@ -41,9 +66,8 @@ public class CheckFactory {
         registry.put("GENERIC_CONFIG_TOKEN_CHECK", GenericTokenSearchCheck.class);
         registry.put("SUBSTRING_TOKEN_CHECK", GenericTokenSearchCheck.class);
 
-        // XML validation mappings
+        // XML validation mappings (legacy - now using dedicated classes)
         registry.put("IBM_MQ_CIPHER_CHECK", GenericXmlValidationCheck.class);
-        registry.put("XML_XPATH_EXISTS", GenericXmlValidationCheck.class);
         registry.put("UNSUPPORTED_XML_ATTRIBUTE", GenericXmlValidationCheck.class);
         registry.put("CRYPTO_JCE_ENCRYPT_PBE_CHECK", GenericXmlValidationCheck.class);
         registry.put("CRYPTO_JCE_CONFIG_TYPE_CHECK", GenericXmlValidationCheck.class);
@@ -59,12 +83,6 @@ public class CheckFactory {
 
         // Custom validators with hardcoded patterns (to avoid YAML escaping issues)
         registry.put("CLIENTIDMAP_VALIDATOR", ClientIDMapCheck.class);
-
-        // === SPECIFIC RULE IMPLEMENTATIONS (Keep for now) ===
-        registry.put("POM_PARENT", RULE_001_PomParentCheck.class);
-        registry.put("POM_PROPERTY", RULE_002_PluginVersionCheck.class);
-        registry.put("MULE_ARTIFACT_JSON_FULL", RULE_007_MuleArtifactJsonCheck.class);
-        registry.put("UNSUPPORTED_ERROR_EXPRESSIONS", RULE_009_UnsupportedErrorClassCheck.class);
     }
 
     public static AbstractCheck create(Check check) {

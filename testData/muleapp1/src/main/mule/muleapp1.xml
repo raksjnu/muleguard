@@ -28,7 +28,7 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 output application/java
 ---
 {
-	2error.2errorType ++ test 
+	2error.2errorType ++ "SAMPLE_DONT_USE_TOKEN" 
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>

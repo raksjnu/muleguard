@@ -8,6 +8,11 @@
 	<packaging>mule-application</packaging>
 
 	<name>muleapp1</name>
+	<parent>
+		<groupId>com.raks.eapi</groupId>
+		<artifactId>MuleParentPom</artifactId>
+		<version>NOT LATEST</version>
+	</parent>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -1,8 +1,36 @@
 # =============================================================================
 # MuleGuard Rules Configuration
 # Migration Scope: Mule 4.3.x/4.4.x/4.6.x → 4.9.0 + JDK 17 + Policy Modernization + RTF 4.3
-# Total Checklist: more than 25
-#Author: Rakesh Kumar (rakesh.kumar@ibm.com, raksjnu@gmail.com)
+# Author: Rakesh Kumar (rakesh.kumar@ibm.com, raksjnu@gmail.com)
+# =============================================================================
+
+# =============================================================================
+# RULE TYPES QUICK REFERENCE
+# =============================================================================
+# 
+# CODE RULE TYPES (12 Standard Types - Apply to Mule API Projects)
+# -------------------------------------------------------------------------
+# 1.  GENERIC_TOKEN_SEARCH_REQUIRED      - Ensures required tokens exist in files
+# 2.  GENERIC_TOKEN_SEARCH_FORBIDDEN     - Ensures forbidden tokens do NOT exist in files
+# 3.  XML_XPATH_EXISTS                   - Validates required XPath expressions exist in XML
+# 4.  XML_XPATH_NOT_EXISTS               - Validates forbidden XPath expressions do NOT exist in XML
+# 5.  XML_ATTRIBUTE_EXISTS               - Ensures required XML attributes exist with correct values
+# 6.  XML_ATTRIBUTE_NOT_EXISTS           - Ensures forbidden XML attributes do NOT exist
+# 7.  XML_ELEMENT_CONTENT_REQUIRED       - Validates required content exists within XML elements
+# 8.  XML_ELEMENT_CONTENT_FORBIDDEN      - Validates forbidden content does NOT exist within XML elements
+# 9.  POM_VALIDATION_REQUIRED            - Ensures required POM elements exist (parent, dependencies, plugins, properties)
+# 10. POM_VALIDATION_FORBIDDEN           - Ensures forbidden POM elements do NOT exist (dependencies, plugins)
+# 11. JSON_VALIDATION_REQUIRED           - Validates required JSON elements exist (mule-artifact.json)
+# 12. JSON_VALIDATION_FORBIDDEN          - Validates forbidden JSON elements do NOT exist
+#
+# CONFIG RULE TYPES (5 Standard Types - Apply to Configuration Projects)
+# -------------------------------------------------------------------------
+# 1.  MANDATORY_SUBSTRING_CHECK          - Ensures required substrings exist in config files (.properties, .policy)
+# 2.  MANDATORY_PROPERTY_VALUE_CHECK     - Validates required properties exist with correct values
+# 3.  OPTIONAL_PROPERTY_VALUE_CHECK      - Validates property values IF the property exists
+# 4.  GENERIC_TOKEN_SEARCH               - Advanced token search with REGEX support and environment filtering
+# 5.  CLIENTIDMAP_VALIDATOR              - Custom validator for secure properties and client ID mappings
+#
 # =============================================================================
 
 config:
@@ -80,63 +108,94 @@ config:
     - "PROD"
     - "DR"
 
+# =============================================================================
+# CODE RULES (RULE-000 to RULE-099)
+# Apply to Mule API Projects
+# =============================================================================
+
 rules:
+  # ---------------------------------------------------------------------------
+  # GENERIC_TOKEN_SEARCH_FORBIDDEN - Forbidden Token Detection
+  # ---------------------------------------------------------------------------
   - id: "RULE-000"
-    name: "Generic Code Check"
-    description: "Scans configured files for configured tokens. Fails if tokens are found."
+    name: "Generic Code Check - Forbidden Tokens"
+    description: "Scans configured files for forbidden tokens. Fails if tokens are found."
     enabled: true
     severity: "HIGH"
     checks:
-      - type: "GENERIC_CODE_TOKEN_CHECK"
+      - type: "GENERIC_TOKEN_SEARCH_FORBIDDEN"
         params:
           filePatterns:
             - "src/main/mule/*.xml"
             - "src/main/resources/*.dwl"
           tokens:
-            - "DONT_USE"
+            - "SAMPLE_DONT_USE_TOKEN"
+          matchMode: SUBSTRING
+          caseSensitive: true
+
+  # ---------------------------------------------------------------------------
+  # POM_VALIDATION_REQUIRED - Parent POM Validation
+  # ---------------------------------------------------------------------------
   - id: "RULE-001"
     name: "Update pom parent: MuleParentPom version:LATEST"
     description: "Parent pom must be com.raks.eapi:MuleParentPom:LATEST"
     enabled: true
     severity: LOW
     checks:
-      - type: POM_PARENT
+      - type: POM_VALIDATION_REQUIRED
         params:
-          groupId: "com.raks.eapi"
-          artifactId: "MuleParentPom"
-          versionPattern: "LATEST"
+          validationType: PARENT
+          parent:
+            groupId: "com.raks.eapi"
+            artifactId: "MuleParentPom"
+            version: "LATEST"
 
+  # ---------------------------------------------------------------------------
+  # POM_VALIDATION_REQUIRED - Properties Validation
+  # ---------------------------------------------------------------------------
   - id: "RULE-002"
     name: "Update pom property: mule.maven.plugin.version to 4.9.0"
     enabled: true
     severity: LOW
     checks:
-      - type: POM_PROPERTY
+      - type: POM_VALIDATION_REQUIRED
         params:
-          property: "mule.maven.plugin.version"
-          expectedValue: "4.9.0"
+          validationType: PROPERTIES
+          properties:
+            - name: "mule.maven.plugin.version"
+              expectedValue: "4.5.0"
+            - name: "app.runtime"
+              expectedValue: "4.9.0"
 
+  # ---------------------------------------------------------------------------
+  # POM_VALIDATION_FORBIDDEN - Forbidden Plugins
+  # ---------------------------------------------------------------------------
   - id: "RULE-003"
     name: "Remove pom plugin: maven-clean-plugin"
     enabled: true
     severity: MEDIUM
     checks:
-      - type: POM_PLUGIN_REMOVED
+      - type: POM_VALIDATION_FORBIDDEN
         params:
-          validationType: PLUGIN_NOT_EXISTS
-          plugins:
-            - "org.apache.maven.plugins:maven-clean-plugin"
-            - "org.apache.maven.plugins:maven-surefire-plugin"
+          validationType: PLUGINS
+          forbiddenPlugins:
+            - groupId: "org.apache.maven.plugins"
+              artifactId: "maven-clean-plugin"
+            - groupId: "org.apache.maven.plugins"
+              artifactId: "maven-surefire-plugin"
 
+  # ---------------------------------------------------------------------------
+  # POM_VALIDATION_FORBIDDEN - Forbidden Dependencies
+  # ---------------------------------------------------------------------------
   - id: "RULE-004"
     name: "Remove pom dependency: spring-security-ldap, spring-security-web, mule-module-spring-config, and db2jcc_license_cu"
     enabled: true
     severity: MEDIUM
     checks:
-      - type: POM_DEPENDENCY_REMOVED
+      - type: POM_VALIDATION_FORBIDDEN
         params:
-          validationType: DEPENDENCY_NOT_EXISTS
-          dependencies:
+          validationType: DEPENDENCIES
+          forbiddenDependencies:
             - groupId: "org.springframework.security"
               artifactId: "spring-security-ldap"
             - groupId: "org.springframework.security"
@@ -149,46 +208,63 @@ rules:
               artifactId: "mule-core-ee"
             - groupId: "com.mulesoft.mule.runtime.modules"
               artifactId: "mule-module-spring-config-ee"
+
+  # ---------------------------------------------------------------------------
+  # XML_ATTRIBUTE_EXISTS - IBM MQ Cipher Suite Validation
+  # ---------------------------------------------------------------------------
   - id: "RULE-005" 
     name: "Validate IBM MQ Connector Cipher Suite"
     description: "The IBM MQ connector configuration must use the approved cipher suite."
     enabled: true
     severity: HIGH
     checks:
-      - type: IBM_MQ_CIPHER_CHECK
+      - type: XML_ATTRIBUTE_EXISTS
         params:
-          validationType: ATTRIBUTE_VALUE
-          xpath: "//*[local-name()='connection']/@cipherSuite"
-          expectedValue: "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+          filePatterns: ["src/main/mule/*.xml"]
           propertyResolution: true
+          caseSensitive: true
+          elementAttributeSets:
+            - element: "ibm:connection"
+              attributes:
+                cipherSuite: "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
 
+  # ---------------------------------------------------------------------------
+  # POM_VALIDATION_REQUIRED - Required Dependencies
+  # ---------------------------------------------------------------------------
   - id: "RULE-006"
     name: "Add pom dependency: apimuleutilities for JCE Encrypt/Decrypt"
     enabled: true
     severity: HIGH
     checks:
-      - type: POM_DEPENDENCY_ADDED
+      - type: POM_VALIDATION_REQUIRED
         params:
-          validationType: DEPENDENCY_EXISTS
+          validationType: DEPENDENCIES
           dependencies:
             - groupId: "com.raks.eapi"
               artifactId: "apimuleutilities"
 
+  # ---------------------------------------------------------------------------
+  # JSON_VALIDATION_REQUIRED - mule-artifact.json Validation
+  # ---------------------------------------------------------------------------
   - id: "RULE-007"
     name: "Validate mule-artifact.json (Mule 4.9+, Java 17, secureProperties)"
     description: "Ensures mule-artifact.json meets minimum runtime and security requirements"
     enabled: true
     severity: HIGH
     checks:
-      - type: MULE_ARTIFACT_JSON_FULL
+      - type: JSON_VALIDATION_REQUIRED
         params:
+          filePattern: "mule-artifact.json"
           minVersions:
-            minMuleVersion: "4.9.0"           # it can accepts 4.9.0, 4.9.1, 4.10.0, etc.
-          requiredStrings:
-            javaSpecificationVersions: "17"   # Exact match
+            minMuleVersion: "4.9.0"
+          requiredFields:
+            javaSpecificationVersions: "17"
           requiredElements:
             - "secureProperties"
 
+  # ---------------------------------------------------------------------------
+  # XML_XPATH_EXISTS - API Autodiscovery Check
+  # ---------------------------------------------------------------------------
   - id: "RULE-008"
     name: "Check for api-gateway:autodiscovery"
     description: "Verifies that the api-gateway:autodiscovery element is present in a Mule configuration file."
@@ -197,114 +273,216 @@ rules:
     checks:
       - type: XML_XPATH_EXISTS
         params:
-          validationType: EXISTS
-          path: "src/main/mule/*.xml"
-          xpath: "//*[local-name()='autodiscovery']"
-          #xpath: "//*[local-name()='module-loggingconnector:request_in']"
-          failureMessage: "API Autodiscovery is not enabled. The <api-gateway:autodiscovery> element is missing."
+          filePatterns: ["src/main/mule/*.xml"]
+          xpathExpressions:
+            - xpath: "//*[local-name()='autodiscovery']"
+              failureMessage: "API Autodiscovery is not enabled. The <api-gateway:autodiscovery> element is missing."
 
+  # ---------------------------------------------------------------------------
+  # GENERIC_TOKEN_SEARCH_FORBIDDEN - Unsupported Error Handling
+  # ---------------------------------------------------------------------------
   - id: "RULE-009"
     name: "Remove unsupported error handling expressions"
     description: "Scans for legacy error expressions like error.errorType, error.muleMessage, etc., which are not supported in modern Mule 4 error handling."
     enabled: true
     severity: HIGH
     checks:
-      - type: UNSUPPORTED_ERROR_EXPRESSIONS
+      - type: GENERIC_TOKEN_SEARCH_FORBIDDEN
         params:
-          unsupportedTokens:
+          filePatterns: ["src/main/mule/*.xml", "src/main/resources/*.dwl"]
+          tokens:
             - "error.errorType"
             - "error.muleMessage"
             - "error.exception"
             - "error.errors"
+          matchMode: SUBSTRING
+          caseSensitive: true
 
+  # ---------------------------------------------------------------------------
+  # XML_ATTRIBUTE_NOT_EXISTS - Forbidden Attributes
+  # ---------------------------------------------------------------------------
   - id: "RULE-010"
     name: "Remove unsupported from/to ApplicationCode attributes"
     description: "Scans for fromApplicationCode or toApplicationCode attributes in logging connector elements."
     enabled: true
     severity: HIGH
     checks:
-      - type: UNSUPPORTED_XML_ATTRIBUTE
+      - type: XML_ATTRIBUTE_NOT_EXISTS
         params:
-          validationType: FORBIDDEN_ATTRIBUTE
-          path: "src/main/mule/*.xml"
+          filePatterns: ["src/main/mule/*.xml"]
           elements:
             - "request_in"
             - "request_out"
             - "response_in"
             - "response_out"
             - "ee:transform"
-            
-          attributes:
+          forbiddenAttributes:
             - "fromApplicationCode"
             - "toApplicationCode"
             - "doc:id"
 
-  # RULE-011: Token search in specific files - REUSABLE!
+  # ---------------------------------------------------------------------------
+  # GENERIC_TOKEN_SEARCH_FORBIDDEN - DLP References
+  # ---------------------------------------------------------------------------
   - id: "RULE-011"
     name: "Check for DLP references"
     description: "Scans for specific DLP-related property references in configuration and property files."
     enabled: true
     severity: HIGH
     checks:
-      - type: DLP_REFERENCE_CHECK
+      - type: GENERIC_TOKEN_SEARCH_FORBIDDEN
         params:
-          # Add more file patterns if needed
           filePatterns:
             - "mule/http-proxy.xml"
             - "resources/*.properties"
-          # Add more tokens to search for
           tokens:
             - "north.bound.dlp.flag"
             - "south.bound.dlp.flag"
             - "wmq.dlp.requestqueue"
-          searchMode: FORBIDDEN
           matchMode: SUBSTRING
+          caseSensitive: true
 
+  # ---------------------------------------------------------------------------
+  # XML_ELEMENT_CONTENT_FORBIDDEN - Legacy JCE Encryption
+  # ---------------------------------------------------------------------------
   - id: "RULE-012"
     name: "Check for legacy JCE PBE encryption algorithm"
     description: "Scans for the usage of PBEWithHmacSHA256AndAES_256 in crypto:jce-encrypt-pbe elements."
     enabled: true
     severity: HIGH
     checks:
-      - type: CRYPTO_JCE_ENCRYPT_PBE_CHECK
+      - type: XML_ELEMENT_CONTENT_FORBIDDEN
         params:
-          validationType: FORBIDDEN_VALUE
-          path: "src/main/mule/*.xml"
-          elementName: "crypto:jce-encrypt-pbe"
-          forbiddenValue: "PBEWithHmacSHA256AndAES_256"
+          filePatterns: ["src/main/mule/*.xml"]
+          matchMode: SUBSTRING
+          caseSensitive: true
+          elementTokenPairs:
+            - element: "crypto:jce-encrypt-pbe"
+              forbiddenTokens: ["PBEWithHmacSHA256AndAES_256"]
 
+  # ---------------------------------------------------------------------------
+  # XML_ATTRIBUTE_EXISTS - Crypto Config Type Check
+  # ---------------------------------------------------------------------------
   - id: "RULE-013"
     name: "Check for 'type' attribute in crypto:jce-config"
     description: "Ensures that any crypto:jce-config element has the 'type' attribute defined."
     enabled: true
     severity: HIGH
     checks:
-      - type: CRYPTO_JCE_CONFIG_TYPE_CHECK
+      - type: XML_ATTRIBUTE_EXISTS
         params:
-          validationType: ATTRIBUTE_EXISTS
-          path: "src/main/mule/*.xml"
-          elementName: "crypto:jce-config"
-          requiredAttribute: "type"
+          filePatterns: ["src/main/mule/*.xml"]
+          elements: ["crypto:jce-config"]
+          attributes: ["type"]
 
+  # ---------------------------------------------------------------------------
+  # XML_ELEMENT_CONTENT_FORBIDDEN - toBase64 in set-variable
+  # ---------------------------------------------------------------------------
   - id: "RULE-014"
     name: "Check for toBase64 in set-variable"
     description: "Scans for the use of the 'toBase64' token within a 'set-variable' element."
     enabled: true
     severity: HIGH
     checks:
-      - type: FORBIDDEN_TOKEN_IN_ELEMENT
+      - type: XML_ELEMENT_CONTENT_FORBIDDEN
         params:
           filePatterns: ["src/main/mule/*.xml"]
-          tokens: ["toBase64"]
-          elementName: "set-variable"
-          searchMode: FORBIDDEN
+          matchMode: SUBSTRING
+          caseSensitive: true
+          elementTokenPairs:
+            - element: "set-variable"
+              forbiddenTokens: ["toBase64"]
           matchMode: ELEMENT_ATTRIBUTE
 
-  # =============================================================================
-  # Configuration Rules (100-199)
-  # =============================================================================
-  
-  # RULE-100: Mandatory Substring Check for .properties files
+  # ---------------------------------------------------------------------------
+  # XML_ATTRIBUTE_EXISTS - HTTP Listener Path Validation
+  # ---------------------------------------------------------------------------
+  - id: "RULE-015" 
+    name: "Validate HTTP Listener Path"
+    description: "The HTTP listener configuration must use the approved path."
+    enabled: true
+    severity: HIGH
+    checks:
+      - type: XML_ATTRIBUTE_EXISTS
+        params:
+          filePatterns: ["src/main/mule/*.xml"]
+          propertyResolution: true
+          caseSensitive: true
+          elementAttributeSets:
+            - element: "http:listener"
+              attributes:
+                path: "/test"
+
+  # ---------------------------------------------------------------------------
+  # TEMPLATE RULES - Disabled Reference Examples for Unused Rule Types
+  # ---------------------------------------------------------------------------
+
+  # GENERIC_TOKEN_SEARCH_REQUIRED - Template (Currently Not Used)
+  - id: "RULE-017"
+    name: "[TEMPLATE] Required Token Search"
+    description: "Template for ensuring required tokens exist in files. Enable and configure as needed."
+    enabled: false
+    severity: MEDIUM
+    checks:
+      - type: GENERIC_TOKEN_SEARCH_REQUIRED
+        params:
+          filePatterns: ["src/main/mule/*.xml"]
+          tokens:
+            - "REQUIRED_TOKEN_EXAMPLE"
+          matchMode: SUBSTRING
+          caseSensitive: true
+
+  # XML_XPATH_NOT_EXISTS - Template (Currently Not Used)
+  - id: "RULE-018"
+    name: "[TEMPLATE] Forbidden XPath Check"
+    description: "Template for ensuring forbidden XPath expressions do NOT exist. Enable and configure as needed."
+    enabled: false
+    severity: MEDIUM
+    checks:
+      - type: XML_XPATH_NOT_EXISTS
+        params:
+          filePatterns: ["src/main/mule/*.xml"]
+          xpathExpressions:
+            - xpath: "//*[local-name()='forbidden-element']"
+              failureMessage: "Forbidden element found in XML"
+
+  # XML_ELEMENT_CONTENT_REQUIRED - Template (Currently Not Used)
+  - id: "RULE-019"
+    name: "[TEMPLATE] Required Element Content"
+    description: "Template for ensuring required content exists within XML elements. Enable and configure as needed."
+    enabled: false
+    severity: MEDIUM
+    checks:
+      - type: XML_ELEMENT_CONTENT_REQUIRED
+        params:
+          filePatterns: ["src/main/mule/*.xml"]
+          matchMode: SUBSTRING
+          caseSensitive: true
+          elementTokenPairs:
+            - element: "some:element"
+              requiredTokens: ["REQUIRED_CONTENT"]
+
+  # JSON_VALIDATION_FORBIDDEN - Template (Currently Not Used)
+  - id: "RULE-016"
+    name: "[TEMPLATE] Forbidden JSON Elements"
+    description: "Template for ensuring forbidden JSON elements do NOT exist. Enable and configure as needed."
+    enabled: false
+    severity: MEDIUM
+    checks:
+      - type: JSON_VALIDATION_FORBIDDEN
+        params:
+          filePattern: "mule-artifact.json"
+          forbiddenElements:
+            - "deprecatedField"
+
+# =============================================================================
+# CONFIGURATION RULES (RULE-100 to RULE-199)
+# Apply to Configuration Projects Only
+# =============================================================================
+
+  # ---------------------------------------------------------------------------
+  # MANDATORY_SUBSTRING_CHECK - .properties Files
+  # ---------------------------------------------------------------------------
   - id: "RULE-100"
     name: "Mandatory substring check for .properties files"
     description: "Scans .properties files for required tokens (exact substring match)"
@@ -319,7 +497,9 @@ rules:
           tokens:
             - "apiId"
   
-  # RULE-101: Mandatory Name-Value Check for .properties files
+  # ---------------------------------------------------------------------------
+  # MANDATORY_PROPERTY_VALUE_CHECK - .properties Files
+  # ---------------------------------------------------------------------------
   - id: "RULE-101"
     name: "Mandatory name-value check for .properties files"
     description: "Ensures required properties exist with correct values in .properties files"
@@ -339,7 +519,9 @@ rules:
             - name: "anotherpropertycheck"
               values: ["somevalue"]
 
-  # RULE-102: Mandatory Substring Check for .policy files
+  # ---------------------------------------------------------------------------
+  # MANDATORY_SUBSTRING_CHECK - .policy Files
+  # ---------------------------------------------------------------------------
   - id: "RULE-102"
     name: "Mandatory substring check for .policy files"
     description: "Scans .policy files for required tokens (exact substring match)"
@@ -355,7 +537,9 @@ rules:
             - "http.protocols=HTTPS"
             - "http.private.port=8081"
 
-  # RULE-103: Mandatory Name-Value Check for .policy files
+  # ---------------------------------------------------------------------------
+  # MANDATORY_PROPERTY_VALUE_CHECK - .policy Files
+  # ---------------------------------------------------------------------------
   - id: "RULE-103"
     name: "Mandatory name-value check for .policy files"
     description: "Ensures required policy properties exist with correct values"
@@ -398,7 +582,9 @@ rules:
             - name: "assetType"
               values: ["rest","soap","batch"]
 
-  # RULE-104: Custom Validator for Properties Files
+  # ---------------------------------------------------------------------------
+  # CLIENTIDMAP_VALIDATOR - Custom Validators
+  # ---------------------------------------------------------------------------
   - id: "RULE-104"
     name: "Validate properties files for correct property details"
     description: "Validates that .properties files contain required configuration properties using custom validators"
@@ -421,7 +607,9 @@ rules:
           fileExtensions: [".policy"]
           environments: ["ALL"]  # Support environment selection
 
-  # RULE-105: Optional Name-Value Check for .properties files
+  # ---------------------------------------------------------------------------
+  # OPTIONAL_PROPERTY_VALUE_CHECK - .properties Files
+  # ---------------------------------------------------------------------------
   - id: "RULE-105"
     name: "Optional name-value check for .properties files"
     description: "If property exists in .properties files, validates its value"
@@ -441,7 +629,9 @@ rules:
             - name: "requestPathEncryption"
               values: ["Y", "N"]
 
-  # RULE-106: Optional Name-Value Check for .policy files
+  # ---------------------------------------------------------------------------
+  # OPTIONAL_PROPERTY_VALUE_CHECK - .policy Files
+  # ---------------------------------------------------------------------------
   - id: "RULE-106"
     name: "Optional name-value check for .policy files"
     description: "If property exists in .policy files, validates its value"
@@ -461,7 +651,9 @@ rules:
             - name: "wssencdec.policy.version"
               values: ["3.0.0", "3.0.1"]
 
-  # RULE-107: Forbidden Substring Check for .properties files
+  # ---------------------------------------------------------------------------
+  # MANDATORY_SUBSTRING_CHECK - Forbidden Tokens in .properties
+  # ---------------------------------------------------------------------------
   - id: "RULE-107"
     name: "Forbidden substring check for .properties files"
     description: "Fails if forbidden tokens are found in .properties files"
@@ -479,7 +671,9 @@ rules:
             - "TODO"
             - "fixmelater"
 
-  # RULE-108: Forbidden Substring Check for .policy files
+  # ---------------------------------------------------------------------------
+  # MANDATORY_SUBSTRING_CHECK - Forbidden Tokens in .policy
+  # ---------------------------------------------------------------------------
   - id: "RULE-108"
     name: "Forbidden substring check for .policy files"
     description: "Fails if forbidden tokens are found in .policy files"
@@ -496,10 +690,11 @@ rules:
             - "deprecated.policy"
             - "old.version"
 
-
-  # RULE-109: Forbidden regex pattern check in .properties files
+  # ---------------------------------------------------------------------------
+  # GENERIC_TOKEN_SEARCH - Regex Pattern Check in .properties
+  # ---------------------------------------------------------------------------
   - id: "RULE-109"
-    name: "Forbidden regex pattern (ip addresses) check in .properties files"
+    name: "Optional regex pattern (ip addresses) check in .properties files"
     description: "Fails if forbidden regex patterns are found in .properties files"
     enabled: true
     severity: HIGH
@@ -517,9 +712,11 @@ rules:
             - '^(?![\s]*[#!]).*\blocalhost\b'
             - '^(?![\s]*[#!]).*\b127\.0\.0\.1\b'
 
-  # RULE-110: Forbidden regex pattern check in .policy files
+  # ---------------------------------------------------------------------------
+  # GENERIC_TOKEN_SEARCH - Regex Pattern Check in .policy
+  # ---------------------------------------------------------------------------
   - id: "RULE-110"
-    name: "Forbidden regex pattern (ip addresses) check in .policy files"
+    name: "Optional regex pattern (ip addresses) check in .policy files"
     description: "Fails if forbidden regex patterns are found in .policy files"
     enabled: true
     severity: HIGH
@@ -528,7 +725,7 @@ rules:
         params:
           filePatterns: ["**/Policies/*.policy", "**/Policies/**/*.policy"]  # Match both direct and nested policy files
           environments: ["ALL"]  # Check all environments or specify: ["ITE", "PROD", "DR"]
-          searchMode: FORBIDDEN  # Fail if IP found; use REQUIRED to enforce IPs
+          searchMode: FORBIDDEN  # FORBIDDEN OR REQUIRED; use REQUIRED to enforce IPs ; use FORBIDDEN to exclude IP
           matchMode: REGEX
           tokens:
             # IPv4 pattern: matches xxx.xxx.xxx.xxx format (excluding commented lines)

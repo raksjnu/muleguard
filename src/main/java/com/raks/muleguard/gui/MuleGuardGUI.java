@@ -95,12 +95,18 @@ public class MuleGuardGUI {
             try {
                 String os = System.getProperty("os.name").toLowerCase();
                 String url = "http://localhost:" + actualPort;
+                ProcessBuilder pb;
                 if (os.contains("win")) {
-                    Runtime.getRuntime().exec("rundll32 url.dll,FileProtocolHandler " + url);
+                    pb = new ProcessBuilder("rundll32", "url.dll,FileProtocolHandler", url);
                 } else if (os.contains("mac")) {
-                    Runtime.getRuntime().exec("open " + url);
+                    pb = new ProcessBuilder("open", url);
                 } else if (os.contains("nix") || os.contains("nux")) {
-                    Runtime.getRuntime().exec("xdg-open " + url);
+                    pb = new ProcessBuilder("xdg-open", url);
+                } else {
+                    pb = null;
+                }
+                if (pb != null) {
+                    pb.start();
                 }
             } catch (Exception e) {
                 // Silently fail if browser can't be opened
@@ -217,6 +223,8 @@ public class MuleGuardGUI {
                     contentType = "application/javascript; charset=UTF-8";
                 } else if (fileName.endsWith(".xlsx")) {
                     contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                } else if (fileName.endsWith(".svg")) {
+                    contentType = "image/svg+xml; charset=UTF-8";
                 }
 
                 // For HTML files, rewrite relative links to use /report/ prefix
@@ -410,7 +418,10 @@ public class MuleGuardGUI {
                         </head>
                         <body>
                             <div class="container">
-                                <h1>🛡️ MuleGuard</h1>
+                                <div style="text-align: center; margin-bottom: 20px;">
+                                    <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI4MCIgaGVpZ2h0PSI4MCIgdmlld0JveD0iMCAwIDgwIDgwIj4KICA8IS0tIFNoaWVsZCBiYWNrZ3JvdW5kIC0tPgogIDxwYXRoIGQ9Ik0gMTUgMjAgTCA0MCAxMCBMIDY1IDIwIEwgNjUgNDUgUSA2NSA2MCA0MCA3NSBRIDE1IDYwIDE1IDQ1IFoiIGZpbGw9IiM2NjMzOTkiIHN0cm9rZT0iIzY2MzM5OSIgc3Ryb2tlLXdpZHRoPSIyIi8+CiAgPCEtLSBSQUtTIHRleHQgaW5zaWRlIHNoaWVsZCAtLT4KICA8dGV4dCB4PSI0MCIgeT0iNTAiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxOCIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5SQUtTPC90ZXh0Pgo8L3N2Zz4=" alt="MuleGuard Logo" style="height: 80px;">
+                                    <h1 style="margin-top: 15px;">MuleGuard</h1>
+                                </div>
                                 <p class="subtitle">Comprehensive MuleSoft Application Validation Tool</p>
 
                                 <form id="validationForm">

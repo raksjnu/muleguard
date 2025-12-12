@@ -1,2 +1,0 @@
-rakscipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA38411
-secure::=testvalue

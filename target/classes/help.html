@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>MuleGuard - Help & Documentation</title>
+    <style>
+        :root {
+            --truist-purple: #663399;
+            --truist-purple-light: #7d4fb2;
+            --text-white: #FFFFFF;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .report-container {
+            border: 5px solid var(--truist-purple);
+            padding: 20px 40px;
+            margin: 20px;
+            border-radius: 8px;
+            background-color: white;
+            position: relative;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+
+        h1 {
+            color: var(--truist-purple);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--truist-purple);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--truist-purple);
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+        }
+
+        p {
+            line-height: 1.6;
+            color: #333;
+        }
+
+        ul {
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .highlight-box {
+            background: #f5f5f5;
+            border-left: 4px solid var(--truist-purple);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+        }
+
+        .feature-card h4 {
+            color: var(--truist-purple);
+            margin-top: 0;
+        }
+
+        .dashboard-button {
+            position: absolute;
+            top: 20px;
+            right: 40px;
+            background-color: var(--truist-purple);
+            color: var(--text-white);
+            border: none;
+            padding: 10px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .dashboard-button:hover {
+            background-color: var(--truist-purple-light);
+        }
+
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #c7254e;
+        }
+
+        .rule-count {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: var(--truist-purple);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="report-container">
+        <a href="CONSOLIDATED-REPORT.html" class="dashboard-button" title="Return to main dashboard">← Dashboard</a>
+
+        <div style="display: flex; align-items: center; margin-bottom: 20px;">
+            <img src="logo.svg" alt="MuleGuard Logo" style="height: 40px; margin-right: 15px;">
+            <h1 style="margin: 0;">MuleGuard - Help & Documentation</h1>
+        </div>
+
+        <div class="highlight-box">
+            <strong>MuleGuard</strong> is a comprehensive static analysis solution designed specifically for MuleSoft
+            applications, ensuring adherence to organizational coding standards, optimal security practices, and
+            readiness for future migrations.
+        </div>
+
+        <h2>📋 What MuleGuard Validates</h2>
+        <p>MuleGuard provides thorough analysis across all core project components:</p>
+        <ul>
+            <li><strong>Maven configurations:</strong> pom.xml validation</li>
+            <li><strong>Mule runtime manifests:</strong> mule-artifact.json structure</li>
+            <li><strong>Mule flows & sub-flows:</strong> XML configuration files</li>
+            <li><strong>DataWeave scripts:</strong> .dwl files</li>
+            <li><strong>Environment-specific property files:</strong> .properties and .policy files</li>
+        </ul>
+
+        <h2>🎯 Key Features</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h4>📊 Comprehensive Rules</h4>
+                <p><span class="rule-count">18 Rule Types</span> covering code and configuration validation</p>
+            </div>
+            <div class="feature-card">
+                <h4>🔍 Multi-Project Scanning</h4>
+                <p>Scan single APIs or entire directories with multiple projects</p>
+            </div>
+            <div class="feature-card">
+                <h4>📈 Detailed Reports</h4>
+                <p>HTML and Excel reports with consolidated dashboard</p>
+            </div>
+            <div class="feature-card">
+                <h4>⚙️ Configurable</h4>
+                <p>Customize rules via <code>rules.yaml</code> configuration file</p>
+            </div>
+        </div>
+
+        <h2>📚 Rule Types</h2>
+
+        <h3>Code Rules (12 types)</h3>
+        <ul>
+            <li><strong>Token Search:</strong> Required/Forbidden tokens in code files</li>
+            <li><strong>XML XPath:</strong> XPath expression validation (exists/not exists)</li>
+            <li><strong>XML Attributes:</strong> Attribute validation (exists/not exists)</li>
+            <li><strong>XML Element Content:</strong> Element content validation (required/forbidden)</li>
+            <li><strong>POM Validation:</strong> Maven dependency validation (required/forbidden)</li>
+            <li><strong>JSON Validation:</strong> JSON structure validation (required/forbidden)</li>
+        </ul>
+
+        <h3>Config Rules (6 types)</h3>
+        <ul>
+            <li><strong>Mandatory Substring Check:</strong> Environment-specific token validation</li>
+            <li><strong>Property Value Checks:</strong> Mandatory and optional property validation</li>
+            <li><strong>Generic Token Search:</strong> Advanced token search with environment filtering</li>
+            <li><strong>Client ID Validator:</strong> Secure property and client ID mapping validation</li>
+            <li><strong>Generic Property File Check:</strong> Flexible property file validation</li>
+        </ul>
+
+        <h2>🚀 How to Use</h2>
+
+        <h3>Command Line</h3>
+        <div class="highlight-box">
+            <code>java -jar muleguard-1.0.0-jar-with-raks.jar -p /path/to/your/mule-projects</code>
+        </div>
+
+        <h3>GUI Mode</h3>
+        <div class="highlight-box">
+            <p>Run <code>start-gui.bat</code> (Windows) or <code>start-gui.sh</code> (Mac/Linux)</p>
+            <p>Opens browser at <code>http://localhost:8080</code></p>
+        </div>
+
+        <h2>📖 Documentation</h2>
+        <p>Detailed rule type documentation is available in the <code>docs/</code> folder:</p>
+        <ul>
+            <li>Each rule type has its own documentation file</li>
+            <li>Includes parameter reference and configuration examples</li>
+            <li>See <code>README.md</code> for complete rule type list</li>
+        </ul>
+
+        <h2>⚙️ Configuration</h2>
+        <p>All rules are configured in <code>src/main/resources/rules/rules.yaml</code></p>
+        <ul>
+            <li><strong>Enable/Disable rules:</strong> Set <code>enabled: true/false</code></li>
+            <li><strong>Severity levels:</strong> CRITICAL, HIGH, MEDIUM, LOW</li>
+            <li><strong>Custom parameters:</strong> Each rule type supports specific parameters</li>
+            <li><strong>Environment filtering:</strong> Target specific environments (DEV, QA, PROD)</li>
+        </ul>
+
+        <h2>📊 Report Output</h2>
+        <ul>
+            <li><strong>CONSOLIDATED-REPORT.html:</strong> Dashboard for all scanned APIs</li>
+            <li><strong>Individual reports:</strong> Detailed results for each API</li>
+            <li><strong>checklist.html:</strong> Complete list of all validation rules</li>
+            <li><strong>Excel reports:</strong> .xlsx format for data analysis</li>
+        </ul>
+
+        <h2>💡 Tips</h2>
+        <ul>
+            <li>Start with the consolidated dashboard to get an overview</li>
+            <li>Click on individual API reports for detailed rule-by-rule results</li>
+            <li>Use the checklist to understand all available validation rules</li>
+            <li>Customize <code>rules.yaml</code> to match your organization's standards</li>
+            <li>Review the <code>docs/</code> folder for rule-specific configuration examples</li>
+        </ul>
+
+        <h2>📧 Contact</h2>
+        <div class="highlight-box" style="margin-top: 15px;">
+            <p><strong>For further information, support, or questions:</strong></p>
+            <p style="margin-top: 10px;">
+                Reach out to <strong>Rakesh Kumar (Raks)</strong><br>
+                Email: <a href="mailto:raksjnu@gmail.com"
+                    style="color: var(--truist-purple); font-weight: bold; text-decoration: none;">raksjnu@gmail.com</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

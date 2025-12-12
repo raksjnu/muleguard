@@ -26,6 +26,20 @@ public class ReportGenerator {
             Files.createDirectories(outputDir);
             generateHtml(report, outputDir.resolve("report.html"));
             generateExcel(report, outputDir.resolve("report.xlsx"));
+
+            // Copy logo.svg to individual report directory
+            try (InputStream logoStream = ReportGenerator.class.getResourceAsStream("/logo.svg")) {
+                if (logoStream != null) {
+                    Path logoPath = outputDir.resolve("logo.svg");
+                    Files.copy(logoStream, logoPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                    System.out.println("   → logo.svg copied to " + outputDir.getFileName());
+                } else {
+                    System.err.println("Warning: logo.svg not found in resources for " + outputDir.getFileName());
+                }
+            } catch (Exception logoEx) {
+                System.err.println(
+                        "Warning: Failed to copy logo.svg to " + outputDir.getFileName() + ": " + logoEx.getMessage());
+            }
         } catch (Exception e) {
             System.err.println("Failed to generate individual reports: " + e.getMessage());
         }
@@ -127,7 +141,10 @@ public class ReportGenerator {
                     <body>
                         <div class="report-container">
                             <a href="../CONSOLIDATED-REPORT.html" class="dashboard-button" title="Return to main dashboard">← Dashboard</a>
-                            <h1>MuleGuard API Validation Report</h1>
+                            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                                <img src="logo.svg" alt="MuleGuard Logo" style="height: 40px; margin-right: 15px;">
+                                <h1 style="margin: 0;">MuleGuard - Mulesoft Application Review & Validation</h1>
+                            </div>
                             <div class="summary">
                                 <strong>Project:</strong> %s<br>
                                 <strong>Generated:</strong> %s<br>
@@ -137,7 +154,7 @@ public class ReportGenerator {
                             <a href="../checklist.html" class="contact-button" title="View all validation checklist items.">Checklist</a>
                             <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Runbook.">Runbook</a>
                             <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Developer Playbook.">Dev Playbook</a>
-                            <a href="mailto:rakesh.kumar@ibm.com" class="contact-button" title="pl contact Rakesh for more details about this tool." style="margin-left: 10px;">Contact</a>
+                            <a href="../help.html" class="contact-button" title="View help and documentation about MuleGuard" style="margin-left: 10px;">Help</a>
                         </div>
                     </body>
                     </html>
@@ -285,87 +302,71 @@ public class ReportGenerator {
             }
 
             int totalRules = totalPassed + totalFailed;
-            String overallStatus = totalFailed == 0 ? "ALL PASS" : "SOME FAILURES";
-            String statusColor = totalFailed == 0 ? "green" : "red";
 
             String html = """
-                                <!DOCTYPE html>
-                                <html>
-                                <head>
-                                    <meta charset="UTF-8">
-                                    <title>MuleGuard - Consolidated Report</title>
-                                    <style>
-                                        :root {
-                                            --truist-purple: #663399;
-                                            --truist-purple-light: #7d4fb2;
-                                            --text-white: #FFFFFF;
-                                        }
-                                        body {font-family: Arial, sans-serif; margin: 0; background-color: #f0f0f0;}
-                                        .report-container { border: 5px solid var(--truist-purple); padding: 20px 40px; margin: 20px; border-radius: 8px; background-color: white; }
-                                        h1 {color: var(--truist-purple);}
-                                        .card {background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px;}
-                                        table {width: 100%%; border-collapse: collapse;}
-                                        th, td {border: 1px solid #ddd; padding: 12px; text-align: left;}
-                                        th {background: var(--truist-purple); color: var(--text-white);}
-                                        .contact-button {
-                                            background-color: var(--truist-purple);
-                                            color: var(--text-white);
-                                            border: none;
-                                            padding: 12px 24px;
-                                            text-align: center;
-                                            text-decoration: none;
-                                            display: inline-block;
-                                            font-size: 16px;
-                                            font-weight: bold;
-                                            margin-top: 25px;
-                                            cursor: pointer;
-                                            border-radius: 5px;
-                                            transition: background-color 0.3s ease;
-                                            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                                        }
-                                        .contact-button:hover { background-color: var(--truist-purple-light); }
-                                    </style>
-                                </head>
-                                <body>
-                                    <div class="report-container">
-                                        <h1>MuleGuard Multi-API Validation Dashboard</h1>
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <meta charset="UTF-8">
+                        <title>MuleGuard - Consolidated Report</title>
+                        <style>
+                            :root {
+                                --truist-purple: #663399;
+                                --truist-purple-light: #7d4fb2;
+                                --text-white: #FFFFFF;
+                            }
+                            body {font-family: Arial, sans-serif; margin: 0; background-color: #f0f0f0;}
+                            .report-container { border: 5px solid var(--truist-purple); padding: 20px 40px; margin: 20px; border-radius: 8px; background-color: white; }
+                            h1 {color: var(--truist-purple);}
+                            .card {background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); margin-bottom: 20px;}
+                            table {width: 100%%; border-collapse: collapse;}
+                            th, td {border: 1px solid #ddd; padding: 12px; text-align: left;}
+                            th {background: var(--truist-purple); color: var(--text-white);}
+                            .contact-button {
+                                background-color: var(--truist-purple);
+                                color: var(--text-white);
+                                border: none;
+                                padding: 12px 24px;
+                                text-align: center;
+                                text-decoration: none;
+                                display: inline-block;
+                                font-size: 16px;
+                                font-weight: bold;
+                                margin-top: 25px;
+                                cursor: pointer;
+                                border-radius: 5px;
+                                transition: background-color 0.3s ease;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                            }
+                            .contact-button:hover { background-color: var(--truist-purple-light); }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="report-container">
+                            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                                <img src="logo.svg" alt="MuleGuard Logo" style="height: 40px; margin-right: 15px;">
+                                <h1 style="margin: 0;">MuleGuard - Mulesoft Application Review & Validation</h1>
+                            </div>
 
 
-                                        <div style="border: 1px solid #ccc; padding: 10px 20px; margin-top: 15px; margin-bottom: 20px; background-color: #fbfbfbff; border-radius: 5px;">
-                                        <h4 style="margin-top: 0; color: #333;">Report Details:</h4>
-                                            <strong>Generated:</strong> %s<br>
-                                            <strong>Total APIs Scanned:</strong> %d<br>
-                                            <strong>Total Rules:</strong> %d | <strong style="color:green">Passed:</strong> %d | <strong style="color:red">Failed:</strong> %d
-                                        </div>
-                                        <table><tr><th>API Name</th><th>Total Rules</th><th>Passed</th><th>Failed</th><th>Status</th><th>Report</th></tr>%s</table>
-                                        <a href="checklist.html" class="contact-button" title="View all validation checklist items.">Checklist</a>
-                                        <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Runbook.">Runbook</a>
-                                        <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Developer Playbook.">Dev Playbook</a>
-                                        <a href="mailto:rakesh.kumar@ibm.com" class="contact-button" title="pl contact Rakesh for more details about this tool." style="margin-left: 10px;">Contact</a>
+                            <div style="border: 1px solid #ccc; padding: 10px 20px; margin-top: 15px; margin-bottom: 20px; background-color: #fbfbfbff; border-radius: 5px;">
+                            <h4 style="margin-top: 0; color: #333;">Report Details:</h4>
+                                <strong>Generated:</strong> %s<br>
+                                <strong>Total APIs Scanned:</strong> %d<br>
+                                <strong>Total Rules:</strong> %d | <strong style="color:green">Passed:</strong> %d | <strong style="color:red">Failed:</strong> %d
+                            </div>
+                            <table><tr><th>API Name</th><th>Total Rules</th><th>Passed</th><th>Failed</th><th>Status</th><th>Report</th></tr>%s</table>
+                            <a href="checklist.html" class="contact-button" title="View all validation checklist items.">Checklist</a>
+                            <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Runbook.">Runbook</a>
+                            <a href="" class="contact-button" title="Mulesoft Runtime Upgrade Project Developer Playbook.">Dev Playbook</a>
+                            <a href="help.html" class="contact-button" title="View help and documentation about MuleGuard" style="margin-left: 10px;">Help</a>
 
-                                    <div style="border: 1px solid #ccc; padding: 10px 20px; margin-top: 15px; margin-bottom: 20px; background-color: #fcfcfcff; border-radius: 5px;">
-                      <h4 style="margin-top: 0; color: #333;">About Muleguard Tool</h4>
-                      <p style="margin-bottom: 0;"></p>
-                        <p>
-                      <strong>MuleGuard</strong> MuleGuard is a comprehensive static analysis solution designed specifically for MuleSoft applications.
-                    </p>
-                    <p>
-                      MuleGuard rigorously validates projects against a predefined suite of checklists through various implemented rules, ensuring adherence to organizational coding standards, optimal security practices, and readiness for future migrations. The tool provides thorough analysis across all core project components, including:
-                    </p>
-                    <ul>
-                      <li>Maven configurations: pom.xml</li>
-                      <li>Mule runtime manifests: mule-artifact.json</li>
-                      <li>Mule flow & sub-flow xml</li>
-                      <li>Mule DataWeave scripts</li>
-                      <li>Environment-specific property files</li>
-                    </ul>
 
-                    </div>
 
-                                        </div>
-                                </body>
-                                </html>
-                                """
+                            </div>
+                    </body>
+                    </html>
+                    """
                     .formatted(
                             LocalDateTime.now(),
                             totalApis,
@@ -379,6 +380,10 @@ public class ReportGenerator {
 
             System.out.println("CONSOLIDATED REPORT GENERATED:");
             System.out.println("   → " + htmlPath.toAbsolutePath());
+
+            // Copy help.html to reports directory
+            copyHelpFile(outputPath);
+
             generateConsolidatedExcel(results, outputPath);
             generateChecklistReport(outputPath); // Generate checklist.html here
 
@@ -471,13 +476,16 @@ public class ReportGenerator {
                     <body>
                         <div class="report-container">
                             <a href="CONSOLIDATED-REPORT.html" class="dashboard-button" title="Return to main dashboard">← Dashboard</a>
-                            <h1>MuleGuard Validation Checklist</h1>
+                            <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                                <img src="logo.svg" alt="MuleGuard Logo" style="height: 40px; margin-right: 15px;">
+                                <h1 style="margin: 0;">MuleGuard - Mulesoft Application Review & Validation</h1>
+                            </div>
                             <p>This page lists all the individual checks performed by the MuleGuard tool.</p>
                             <table>
                                 <tr><th>Sr.#</th><th>ChecklistItem</th><th>ChecklistType</th><th>RuleId</th></tr>
                                 %s
                             </table>
-                            <a href="mailto:rakesh.kumar@ibm.com" class="contact-button" title="pl contact Rakesh for more details about this tool.">Contact</a>
+                            <a href="help.html" class="contact-button" title="View help and documentation about MuleGuard">Help</a>
                         </div>
                     </body>
                     </html>
@@ -579,5 +587,34 @@ public class ReportGenerator {
         if (s == null)
             return "";
         return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace("\"", "&quot;");
+    }
+
+    // Copy help.html from resources to reports directory
+    private static void copyHelpFile(Path outputDir) {
+        try {
+            // Copy help.html
+            InputStream helpStream = ReportGenerator.class.getResourceAsStream("/help.html");
+            if (helpStream == null) {
+                System.err.println("Warning: help.html not found in resources");
+            } else {
+                Path helpPath = outputDir.resolve("help.html");
+                Files.copy(helpStream, helpPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                helpStream.close();
+                System.out.println("   → help.html copied");
+            }
+
+            // Copy logo.svg
+            InputStream logoStream = ReportGenerator.class.getResourceAsStream("/logo.svg");
+            if (logoStream == null) {
+                System.err.println("Warning: logo.svg not found in resources");
+            } else {
+                Path logoPath = outputDir.resolve("logo.svg");
+                Files.copy(logoStream, logoPath, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                logoStream.close();
+                System.out.println("   → logo.svg copied");
+            }
+        } catch (Exception e) {
+            System.err.println("Warning: Failed to copy help files: " + e.getMessage());
+        }
     }
 }
